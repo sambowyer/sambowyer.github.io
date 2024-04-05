@@ -5,7 +5,7 @@
 
 title: Sam Bowyer # Website name
 baseURL: 'https://example.com/' # Website URL
-
+theme: cactus
 ############################
 ## LANGUAGE
 ############################
