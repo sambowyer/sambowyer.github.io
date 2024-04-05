@@ -1,9 +1,9 @@
 baseURL = 'https://example.org/'
 languageCode = 'en-us'
 title = 'Sam Bowyer'
-theme = "cactus"
+theme = "hugo-theme-console"
 
-copyright = "You" # cactus will use title if copyright is not set
+copyright = "Sam Bowyer" # cactus will use title if copyright is not set
 disqusShortname = "example" # Used when comments is enabled. Cactus will use site title if not set
 # googleAnalytics = "UA-1234-5"
 
