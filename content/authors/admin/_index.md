@@ -1,9 +1,9 @@
 ---
 # Display name
-title: Sam Bowyer
+title: 
 
 # Name pronunciation (optional)
-name_pronunciation: ''
+name_pronunciation: 
 
 # Full name (for SEO)
 first_name: Sam
@@ -116,5 +116,5 @@ social:
 highlight_name: true
 ---
 
-''
+
 {style="text-align: justify;"}
