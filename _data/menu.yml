@@ -16,13 +16,13 @@ entries:
   # - title: all posts
   #   post_list:
   #     limit: 5
-      # show_more: true
+  #     show_more: true
       # show_more_text: See archive...
       # show_more_url: archive.html
 
   - title: projects
     entries:
-      - title: alan: a massively parallel probabilistic programming language
+      - title: alan -- a massively parallel probabilistic programming language
         url: https://github.com/alan-ppl/alan
   
   - title: papers
