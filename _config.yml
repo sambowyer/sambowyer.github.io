@@ -25,7 +25,7 @@ github_username:  sambowyer
 
 # Build settings
 markdown: kramdown
-theme: nminima #no-style-please
+theme: minima #no-style-please
 plugins:
   - jekyll-feed
 
