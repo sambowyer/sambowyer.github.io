@@ -16,7 +16,7 @@
 title: Sam Bowyer
 email: sambowyer2@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Probabilistic machine learning PhD student at the University of Bristol.
+  Probabilistic machine learning PhD student at the University of Bristol. Research interests include Bayesian inference, deep learning, and probabilistic programming.
 baseurl: / # the subpath of your site, e.g. /blog
 domain: sambowyer.com
 url: https://sambowyer.com # the base hostname & protocol for your site, e.g. http://example.com
