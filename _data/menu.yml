@@ -20,12 +20,11 @@ entries:
       # show_more_text: See archive...
       # show_more_url: archive.html
       
-
   - title: blog posts
     entries:
       - title: Bayesian LLM Finetuning (Compass Student Blog)
         url: https://compass.blogs.bristol.ac.uk/2024/08/28/student-perspectives-bayesian-llm-finetuning/
-      - title: Special Report: Compass Away Day 2024
+      - title: "Special Report: Compass Away Day 2024"
         url: https://compass.blogs.bristol.ac.uk/2024/08/21/compass-away-day-2024/
 
   - title: projects
