@@ -32,11 +32,15 @@ entries:
 
   - title: projects
     entries:
+      - title: bayes_evals -- a lightweight library for Bayesian analysis of LLM evals
+        url: https://github.com/sambowyer/bayes_evals
       - title: alan -- a massively parallel probabilistic programming language
         url: https://github.com/alan-ppl/alan
   
   - title: papers
     entries:
+      - title: "Position: Don't use the CLT in LLM evals with fewer than a few hundred datapoints"
+        url: https://arxiv.org/abs/2503.01747
       - title: Using Using Autodiff to Estimate Posterior Moments, Marginals and Samples (UAI 2024)
         url: https://arxiv.org/abs/2310.17374
             
