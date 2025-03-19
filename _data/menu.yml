@@ -41,7 +41,7 @@ entries:
     entries:
       - title: "Position: Don't use the CLT in LLM evals with fewer than a few hundred datapoints (preprint)"
         url: https://arxiv.org/abs/2503.01747
-      - title: "Massively Parallel Expectation Maximization For Approximate Posteriors (preprint)"
+      - title: "Massively Parallel Expectation Maximization For Approximate Posteriors (AABI 2025)"
         url: https://arxiv.org/abs/2503.08264
       - title: Using Using Autodiff to Estimate Posterior Moments, Marginals and Samples (UAI 2024)
         url: https://arxiv.org/abs/2310.17374
