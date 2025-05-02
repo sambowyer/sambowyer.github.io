@@ -39,7 +39,7 @@ entries:
   
   - title: papers
     entries:
-      - title: "Position: Don't use the CLT in LLM evals with fewer than a few hundred datapoints (preprint)"
+      - title: "Position: Don't use the CLT in LLM evals with fewer than a few hundred datapoints (ICML 2025 Spotlight))"
         url: https://arxiv.org/abs/2503.01747
       - title: "Massively Parallel Expectation Maximization For Approximate Posteriors (AABI 2025)"
         url: https://arxiv.org/abs/2503.08264
