@@ -12,6 +12,8 @@ entries:
         url: https://github.com/sambowyer
       - title: linkedin
         url: https://www.linkedin.com/in/sam-bowyer-943a0116a/
+      - title: CV
+        url: https://sambowyer.com/CV.pdf
 
   # - title: all posts
   #   post_list:
