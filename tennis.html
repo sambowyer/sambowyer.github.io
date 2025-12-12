@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>2D Arcade Tennis - 2 Player Edition</title>
+    <title>Tennis</title>
     <style>
         body {
             background-color: #222;
@@ -81,7 +81,7 @@
         <canvas id="gameCanvas" width="800" height="450"></canvas>
         
         <div id="mainMenu">
-            <h1>RETRO TENNIS</h1>
+            <h1>CHAOS TENNIS</h1>
             <button onclick="startGame(1)">1 PLAYER (vs CPU)</button>
             <button onclick="startGame(2)">2 PLAYER (PvP)</button>
         </div>
@@ -118,36 +118,37 @@
     let server = 1; // 1 or 2 (Player 1 or Player 2)
     
     // Scoring
-    let score1 = 0;
-    let score2 = 0;
-    let adv1 = false;
-    let adv2 = false;
+    let score1 = 0; let score2 = 0;
+    let adv1 = false; let adv2 = false;
 
     // --- Objects ---
 
     const p1 = {
         x: 100, y: GROUND_Y, w: 30, h: 60,
-        vx: 0, vy: 0,
-        speed: 5, jumpPower: -10,
-        color: 'white',
-        swinging: false, swingTimer: 0
+        vx: 0, vy: 0, speed: 5, jumpPower: -10,
+        color: 'white', swinging: false, swingTimer: 0
     };
 
     const p2 = {
         x: 700, y: GROUND_Y, w: 30, h: 60,
-        vx: 0, vy: 0,
-        speed: 5, jumpPower: -10,
-        color: '#ffcccc',
-        swinging: false, swingTimer: 0,
-        isCpu: true
+        vx: 0, vy: 0, speed: 5, jumpPower: -10,
+        color: '#ffcccc', swinging: false, swingTimer: 0, isCpu: true
     };
 
     const ball = {
         x: 0, y: 0, radius: 6,
+        vx: 0, vy: 0, color: 'yellow',
+        bounces: 0, lastHitter: 0
+    };
+
+    // Power Up Object
+    const powerUp = {
+        x: -100, y: -100, radius: 20,
         vx: 0, vy: 0,
-        color: 'yellow',
-        bounces: 0,
-        lastHitter: 0 // 1 or 2
+        visible: false, // Waiting to be hit
+        active: false,  // Bouncing around hitting things
+        nextSpawnTime: 0,
+        despawnTime: 0
     };
 
     // --- Input Handling ---
@@ -155,56 +156,33 @@
 
     window.addEventListener('keydown', (e) => {
         keys[e.code] = true;
-
         if (gameState === 'MENU') return;
-
-        // Reset
-        if (e.code === 'Space' && gameState === 'END') {
-            resetMatch();
-            return;
-        }
-
-        // Serving
+        if (e.code === 'Space' && gameState === 'END') { resetMatch(); return; }
         if (gameState === 'SERVE') {
             if (server === 1 && e.code === 'Space') serveBall();
             else if (server === 2 && !p2.isCpu && e.code === 'KeyP') serveBall();
             return;
         }
-
-        // Swings
         if (e.code === 'Space') attemptSwing(p1, 1);
         if (e.code === 'KeyP' && !p2.isCpu) attemptSwing(p2, 2);
     });
 
-    window.addEventListener('keyup', (e) => {
-        keys[e.code] = false;
-    });
+    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
     // --- Menu Functions ---
 
     function startGame(mode) {
         gameMode = mode;
         p2.isCpu = (mode === 1);
-        
-        // Update UI Text
-        if (mode === 1) {
-            p2ControlsText.innerHTML = "<b>CPU:</b> AI Controlled";
-            p2.speed = 3.5; // Slower for CPU fairness
-        } else {
-            p2ControlsText.innerHTML = "<b>P2:</b> Arrows + P (Hit)";
-            p2.speed = 5; // Same speed as P1
-        }
-
+        p2ControlsText.innerHTML = (mode === 1) ? "<b>CPU:</b> AI Controlled" : "<b>P2:</b> Arrows + P (Hit)";
+        p2.speed = (mode === 1) ? 3.5 : 5;
         menuEl.classList.add('hidden');
         resetMatch();
     }
 
     function resetMatch() {
-        score1 = 0; score2 = 0;
-        adv1 = false; adv2 = false;
-        gameState = 'SERVE';
-        server = 1;
-        winner = null;
+        score1 = 0; score2 = 0; adv1 = false; adv2 = false;
+        gameState = 'SERVE'; server = 1; winner = null;
         updateUI();
         resetPositions();
     }
@@ -212,17 +190,38 @@
     function resetPositions() {
         p1.x = 100; p1.y = GROUND_Y - p1.h; p1.vx = 0; p1.vy = 0;
         p2.x = 700; p2.y = GROUND_Y - p2.h; p2.vx = 0; p2.vy = 0;
+        ball.x = (server === 1) ? p1.x + 20 : p2.x - 20;
+        ball.y = (server === 1) ? p1.y : p2.y;
+        ball.vx = 0; ball.vy = 0; ball.bounces = 0; ball.lastHitter = 0;
+        // Reset powerup on point end
+        resetPowerUp();
+    }
 
-        // Ball placement
-        if (server === 1) {
-            ball.x = p1.x + 20; ball.y = p1.y;
-        } else {
-            ball.x = p2.x - 20; ball.y = p2.y;
-        }
-        
-        ball.vx = 0; ball.vy = 0;
-        ball.bounces = 0;
-        ball.lastHitter = 0;
+    // --- Power Up Logic ---
+
+    function resetPowerUp() {
+        powerUp.visible = false;
+        powerUp.active = false;
+        powerUp.x = -100; // hide offscreen
+        powerUp.vx = 0; powerUp.vy = 0;
+        // Schedule next spawn 15s from now
+        powerUp.nextSpawnTime = Date.now() + 8000;
+    }
+
+    function spawnPowerUp() {
+        powerUp.x = 250 + Math.random() * 300; // Center-ish
+        powerUp.y = 100 + Math.random() * 150; // Mid-air
+        powerUp.visible = true;
+    }
+
+    function activatePowerUp() {
+        powerUp.visible = false;
+        powerUp.active = true;
+        // Give random violent velocity
+        powerUp.vx = (Math.random() > 0.5 ? 1 : -1) * (6 + Math.random() * 4);
+        powerUp.vy = -(6 + Math.random() * 6);
+        // Despawn in 5-10 seconds
+        powerUp.despawnTime = Date.now() + (5000 + Math.random() * 5000);
     }
 
     // --- Core Logic ---
@@ -230,33 +229,18 @@
     function serveBall() {
         gameState = 'PLAY';
         uiMessage.innerText = "";
-        ball.vy = -8; // Toss
-        ball.lastHitter = server;
-        
-        // CPU Serve Auto-hit
-        if (server === 2 && p2.isCpu) {
-            ball.vx = -8; 
-            ball.vy = -7;
-        }
+        ball.vy = -8; ball.lastHitter = server;
+        if (server === 2 && p2.isCpu) { ball.vx = -8; ball.vy = -7; }
     }
 
     function attemptSwing(actor, id) {
-        actor.swinging = true;
-        actor.swingTimer = 10;
-
-        // Hitbox
+        actor.swinging = true; actor.swingTimer = 10;
         const dx = ball.x - (actor.x + actor.w/2);
         const dy = ball.y - (actor.y + actor.h/2);
-        const dist = Math.sqrt(dx*dx + dy*dy);
-
-        if (dist < 60) {
+        if (Math.sqrt(dx*dx + dy*dy) < 60) {
             ball.bounces = 0;
             const dir = (id === 1) ? 1 : -1;
-            
-            // Aiming
-            let lift = -8;
-            if (ball.y < actor.y + 10) lift = -4; // Smash
-            
+            let lift = (ball.y < actor.y + 10) ? -4 : -8;
             ball.vx = (10 + Math.random() * 2) * dir;
             ball.vy = lift;
             ball.lastHitter = id;
@@ -264,50 +248,21 @@
     }
 
     function scorePoint(winnerId) {
-        gameState = 'SERVE';
-        server = (winnerId === 1) ? 2 : 1; // Switch server
-        
-        if (winnerId === 1) handleScoreUpdate(1);
-        else handleScoreUpdate(2);
-
+        gameState = 'SERVE'; server = (winnerId === 1) ? 2 : 1;
+        handleScoreUpdate(winnerId);
         resetPositions();
-        
-        // CPU Serve Delay
-        if (server === 2 && p2.isCpu && gameState !== 'END') {
-            setTimeout(serveBall, 1000);
-        }
+        if (server === 2 && p2.isCpu && gameState !== 'END') setTimeout(serveBall, 1000);
         updateUI();
     }
 
     function handleScoreUpdate(who) {
-        // Deuce / Advantage Logic
+        // (Scoring logic identical to previous version)
         if (adv1 || adv2) {
-            if (who === 1) {
-                if (adv1) winGame(1);
-                else if (adv2) adv2 = false; // Deuce
-                else adv1 = true;
-            } else {
-                if (adv2) winGame(2);
-                else if (adv1) adv1 = false; // Deuce
-                else adv2 = true;
-            }
+            if (who === 1) { if (adv1) winGame(1); else if (adv2) adv2 = false; else adv1 = true; }
+            else { if (adv2) winGame(2); else if (adv1) adv1 = false; else adv2 = true; }
         } else {
-            // Standard Scoring
-            if (who === 1) {
-                if (score1 === 3) {
-                    if (score2 === 3) adv1 = true;
-                    else winGame(1);
-                } else {
-                    score1++;
-                }
-            } else {
-                if (score2 === 3) {
-                    if (score1 === 3) adv2 = true;
-                    else winGame(2);
-                } else {
-                    score2++;
-                }
-            }
+            if (who === 1) { if (score1 === 3) { if (score2 === 3) adv1 = true; else winGame(1); } else score1++; }
+            else { if (score2 === 3) { if (score1 === 3) adv2 = true; else winGame(2); } else score2++; }
         }
     }
 
@@ -319,24 +274,13 @@
 
     function updateUI() {
         if (gameState === 'END') return;
-
-        let txt1 = POINTS[score1];
-        let txt2 = POINTS[score2];
-
+        let t1 = POINTS[score1], t2 = POINTS[score2];
         if (score1 === 3 && score2 === 3) {
-            if (!adv1 && !adv2) { txt1 = "40"; txt2 = "40 (Deuce)"; }
-            else if (adv1) { txt1 = "Adv"; txt2 = "40"; }
-            else { txt1 = "40"; txt2 = "Adv"; }
+            if (!adv1 && !adv2) { t1="40"; t2="40 (Deuce)"; } else if (adv1) { t1="Adv"; t2="40"; } else { t1="40"; t2="Adv"; }
         }
-
-        const p2Name = (gameMode === 1) ? "CPU" : "P2";
-        uiScore.innerText = `P1: ${txt1} | ${p2Name}: ${txt2}`;
-
-        if (gameState === 'SERVE') {
-            const sName = (server === 1) ? "Player 1" : p2Name;
-            const action = (server === 2 && p2.isCpu) ? "..." : " (Hit Key)";
-            uiMessage.innerText = `${sName} to Serve${action}`;
-        }
+        const p2N = (gameMode === 1) ? "CPU" : "P2";
+        uiScore.innerText = `P1: ${t1} | ${p2N}: ${t2}`;
+        if (gameState === 'SERVE') uiMessage.innerText = `${(server===1)?"Player 1":p2N} to Serve${(server===2&&p2.isCpu)?"...":" (Hit Key)"}`;
     }
 
     // --- Update Loop ---
@@ -344,163 +288,151 @@
     function update() {
         if (gameState === 'MENU' || gameState === 'END') return;
 
-        // --- Player 1 Controls (WASD) ---
-        if (keys['KeyA']) p1.vx = -p1.speed;
-        else if (keys['KeyD']) p1.vx = p1.speed;
-        else p1.vx = 0;
-
+        // Player Controls
+        if (keys['KeyA']) p1.vx = -p1.speed; else if (keys['KeyD']) p1.vx = p1.speed; else p1.vx = 0;
         if (keys['KeyW'] && p1.y + p1.h >= GROUND_Y) p1.vy = p1.jumpPower;
-
         applyPhysics(p1);
 
-        // --- Player 2 Logic ---
+        // CPU / P2 Controls
         if (p2.isCpu) {
-            // AI Logic
             if (gameState === 'PLAY' && ball.x > NET_X && ball.vx > 0) {
-                let targetX = ball.x;
-                if (p2.x < targetX - 10) p2.vx = p2.speed;
-                else if (p2.x > targetX + 10) p2.vx = -p2.speed;
-                else p2.vx = 0;
-
-                if (ball.y < p2.y && p2.y + p2.h >= GROUND_Y && ball.x > p2.x - 50) {
-                     p2.vy = p2.jumpPower;
-                }
-
-                if (Math.abs(ball.x - p2.x) < 40 && Math.abs(ball.y - p2.y) < 60) {
-                    attemptSwing(p2, 2);
-                }
-            } else {
-                // Return to center
-                if (p2.x < 650) p2.vx = p2.speed;
-                else if (p2.x > 700) p2.vx = -p2.speed;
-                else p2.vx = 0;
-            }
+                if (p2.x < ball.x - 10) p2.vx = p2.speed; else if (p2.x > ball.x + 10) p2.vx = -p2.speed; else p2.vx=0;
+                if (ball.y < p2.y && p2.y + p2.h >= GROUND_Y && ball.x > p2.x - 50) p2.vy = p2.jumpPower;
+                if (Math.abs(ball.x - p2.x) < 40 && Math.abs(ball.y - p2.y) < 60) attemptSwing(p2, 2);
+            } else { if (p2.x < 650) p2.vx=p2.speed; else if(p2.x > 700) p2.vx=-p2.speed; else p2.vx=0; }
         } else {
-            // Human Controls (Arrows)
-            if (keys['ArrowLeft']) p2.vx = -p2.speed;
-            else if (keys['ArrowRight']) p2.vx = p2.speed;
-            else p2.vx = 0;
-
+            if (keys['ArrowLeft']) p2.vx = -p2.speed; else if (keys['ArrowRight']) p2.vx = p2.speed; else p2.vx = 0;
             if (keys['ArrowUp'] && p2.y + p2.h >= GROUND_Y) p2.vy = p2.jumpPower;
         }
-
         applyPhysics(p2);
 
-        // Net Collisions (Players)
-        if (p1.x + p1.w > NET_X && p1.x < NET_X + 10) p1.x = NET_X - p1.w;
-        if (p2.x < NET_X + 10) p2.x = NET_X + 10;
+        // Collisions
+        if (p1.x+p1.w > NET_X && p1.x < NET_X+10) p1.x = NET_X-p1.w;
+        if (p2.x < NET_X+10) p2.x = NET_X+10;
 
         // --- Ball Physics ---
         if (gameState === 'PLAY') {
-            ball.vy += GRAVITY * 0.5;
-            ball.vx *= 0.99; // Air resistance
-            ball.x += ball.vx;
-            ball.y += ball.vy;
+            ball.vy += GRAVITY * 0.5; ball.vx *= 0.99;
+            ball.x += ball.vx; ball.y += ball.vy;
 
-            // Net Collision (Ball)
-            if (ball.y > GROUND_Y - NET_HEIGHT) {
-                if (Math.abs(ball.x - NET_X) < ball.radius + 5) {
-                    ball.vx *= -0.8; 
-                }
-            }
+            // Net collision
+            if (ball.y > GROUND_Y - NET_HEIGHT && Math.abs(ball.x - NET_X) < ball.radius + 5) ball.vx *= -0.8;
 
-            // Floor
+            // Floor collision
             if (ball.y + ball.radius > GROUND_Y) {
-                ball.y = GROUND_Y - ball.radius;
-                ball.vy *= -0.7;
+                ball.y = GROUND_Y - ball.radius; ball.vy *= -0.7;
                 if (Math.abs(ball.vy) < 2) ball.vy = 0;
-                ball.bounces++;
-                checkConditions();
+                ball.bounces++; checkConditions();
             }
-
-            // Walls
             if (ball.x < 0 || ball.x > canvas.width) checkConditions(true);
 
-        } else if (gameState === 'SERVE') {
-            if (server === 1) {
-                ball.x = p1.x + 20; ball.y = p1.y + 20;
-            } else {
-                ball.x = p2.x - 20; ball.y = p2.y + 20;
+            // --- Power Up Updates ---
+            const now = Date.now();
+
+            // 1. Spawning
+            if (!powerUp.visible && !powerUp.active && now > powerUp.nextSpawnTime) {
+                spawnPowerUp();
             }
+
+            // 2. Triggering (Ball hits visible powerup)
+            if (powerUp.visible) {
+                 const dx = ball.x - powerUp.x; const dy = ball.y - powerUp.y;
+                 if(Math.sqrt(dx*dx+dy*dy) < ball.radius + powerUp.radius) activatePowerUp();
+            }
+
+            // 3. Active Behavior
+            if (powerUp.active) {
+                // Physics (Very Bouncy)
+                powerUp.vy += GRAVITY; powerUp.x += powerUp.vx; powerUp.y += powerUp.vy;
+                // Floor bounce
+                if (powerUp.y + powerUp.radius > GROUND_Y) {
+                    powerUp.y = GROUND_Y - powerUp.radius; powerUp.vy *= -0.95; // High restitution
+                }
+                 // Wall bounce
+                if (powerUp.x - powerUp.radius < 0 || powerUp.x + powerUp.radius > canvas.width) powerUp.vx *= -1;
+                
+                // Collision with Ball (Chaos moment)
+                const dx = ball.x - powerUp.x; const dy = ball.y - powerUp.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const minDist = ball.radius + powerUp.radius;
+                if(dist < minDist) {
+                    // Simple elastic bounce approximation: push them apart based on angle
+                    const angle = Math.atan2(dy, dx);
+                    const force = 10;
+                    ball.vx = Math.cos(angle) * force + ball.vx*0.5; ball.vy = Math.sin(angle) * force + ball.vy*0.5;
+                    powerUp.vx = -Math.cos(angle) * force; powerUp.vy = -Math.sin(angle) * force;
+                    // Separate slightly to prevent sticking
+                    ball.x += Math.cos(angle)*2; ball.y += Math.sin(angle)*2;
+                }
+
+                // Despawning timer
+                if (now > powerUp.despawnTime) resetPowerUp();
+            }
+
+        } else if (gameState === 'SERVE') {
+             ball.x = (server===1 ? p1.x+20 : p2.x-20); ball.y = (server===1 ? p1.y+20 : p2.y+20);
         }
 
-        // Swing Timers
-        if (p1.swingTimer > 0) p1.swingTimer--; else p1.swinging = false;
-        if (p2.swingTimer > 0) p2.swingTimer--; else p2.swinging = false;
+        if (p1.swingTimer>0) p1.swingTimer--; else p1.swinging=false;
+        if (p2.swingTimer>0) p2.swingTimer--; else p2.swinging=false;
     }
 
     function applyPhysics(obj) {
-        obj.vy += GRAVITY;
-        obj.x += obj.vx;
-        obj.y += obj.vy;
-        if (obj.y + obj.h > GROUND_Y) {
-            obj.y = GROUND_Y - obj.h;
-            obj.vy = 0;
-        }
+        obj.vy += GRAVITY; obj.x += obj.vx; obj.y += obj.vy;
+        if (obj.y+obj.h > GROUND_Y) { obj.y = GROUND_Y-obj.h; obj.vy = 0; }
     }
 
     function checkConditions(isOut = false) {
-        if (ball.bounces >= 2) {
-            if (ball.x < NET_X) scorePoint(2); 
-            else scorePoint(1);
-            return;
-        }
-        if (isOut) {
-            if (ball.lastHitter === 1) scorePoint(2);
-            else scorePoint(1);
-        }
+        if (ball.bounces >= 2) { (ball.x < NET_X) ? scorePoint(2) : scorePoint(1); return; }
+        if (isOut) (ball.lastHitter === 1) ? scorePoint(2) : scorePoint(1);
     }
 
     // --- Draw ---
     function draw() {
-        // Bg
-        ctx.fillStyle = '#4a8f4a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#4a8f4a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Lines
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
+        // Court
+        ctx.strokeStyle = 'white'; ctx.lineWidth = 4; ctx.beginPath();
         ctx.moveTo(50, GROUND_Y); ctx.lineTo(50, GROUND_Y+30);
         ctx.moveTo(750, GROUND_Y); ctx.lineTo(750, GROUND_Y+30);
-        ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y);
-        ctx.stroke();
+        ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
+        ctx.fillStyle = '#eee'; ctx.fillRect(NET_X - 2, GROUND_Y - NET_HEIGHT, 4, NET_HEIGHT);
 
-        // Net
-        ctx.fillStyle = '#eee';
-        ctx.fillRect(NET_X - 2, GROUND_Y - NET_HEIGHT, 4, NET_HEIGHT);
+        // PowerUp
+        drawPowerUp();
 
-        // P1
-        ctx.fillStyle = p1.swinging ? '#ffff00' : p1.color;
-        ctx.fillRect(p1.x, p1.y, p1.w, p1.h);
-        if (p1.swinging) drawRacket(p1, 1);
-
-        // P2
-        ctx.fillStyle = p2.swinging ? '#ff5555' : p2.color;
-        ctx.fillRect(p2.x, p2.y, p2.w, p2.h);
-        if (p2.swinging) drawRacket(p2, -1);
+        // Players
+        ctx.fillStyle = p1.swinging?'#ffff00':p1.color; ctx.fillRect(p1.x, p1.y, p1.w, p1.h);
+        if(p1.swinging) drawRacket(p1, 1);
+        ctx.fillStyle = p2.swinging?'#ff5555':p2.color; ctx.fillRect(p2.x, p2.y, p2.w, p2.h);
+        if(p2.swinging) drawRacket(p2, -1);
 
         // Ball
-        ctx.fillStyle = ball.color;
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+        ctx.fillStyle = ball.color; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    }
+
+    function drawPowerUp() {
+        if (!powerUp.visible && !powerUp.active) return;
+        const x = powerUp.x, y = powerUp.y, r = powerUp.radius;
+        // Face circle
+        ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#DAA520'; ctx.lineWidth = 2; ctx.stroke();
+        // Eyes
+        ctx.fillStyle = '#000'; ctx.beginPath();
+        ctx.arc(x - r/2.5, y - r/4, r/5, 0, Math.PI*2); ctx.arc(x + r/2.5, y - r/4, r/5, 0, Math.PI*2); ctx.fill();
+        // Smile
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.beginPath();
+        ctx.arc(x, y + r/10, r/2, 0.2*Math.PI, 0.8*Math.PI); ctx.stroke();
     }
 
     function drawRacket(actor, dir) {
-        ctx.strokeStyle = 'white';
-        ctx.beginPath();
-        ctx.arc(actor.x + (actor.w/2) + (20*dir), actor.y + 30, 15, 0, Math.PI*2);
-        ctx.stroke();
+        ctx.strokeStyle = 'white'; ctx.beginPath();
+        ctx.arc(actor.x+(actor.w/2)+(20*dir), actor.y+30, 15, 0, Math.PI*2); ctx.stroke();
     }
 
-    function loop() {
-        update();
-        draw();
-        requestAnimationFrame(loop);
-    }
-
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
+    // Start timer initially
+    resetPowerUp();
     loop();
 
 </script>
