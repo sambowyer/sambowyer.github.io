@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>2D Arcade Tennis</title>
+    <title>2D Arcade Tennis - 2 Player Edition</title>
     <style>
         body {
             background-color: #222;
@@ -16,31 +16,83 @@
             margin: 0;
             overflow: hidden;
         }
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 4px solid #fff;
+        }
         canvas {
             background: #4a8f4a; /* Grass Green */
-            border: 4px solid #fff;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: block;
         }
+        
+        /* UI Overlays */
         #ui {
             margin-top: 10px;
             text-align: center;
+            width: 800px;
         }
-        .controls {
+        .controls-info {
             font-size: 0.8rem;
             color: #aaa;
-            margin-top: 5px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 50px;
         }
+
+        /* Main Menu Overlay */
+        #mainMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        h1 { font-size: 3rem; margin-bottom: 20px; text-shadow: 2px 2px #4a8f4a; }
+        button {
+            background: #fff;
+            color: #222;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #4a8f4a;
+            color: white;
+        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas" width="800" height="450"></canvas>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
+        
+        <div id="mainMenu">
+            <h1>RETRO TENNIS</h1>
+            <button onclick="startGame(1)">1 PLAYER (vs CPU)</button>
+            <button onclick="startGame(2)">2 PLAYER (PvP)</button>
+        </div>
+    </div>
     
     <div id="ui">
-        <h2 id="scoreBoard">Player: 0 | CPU: 0</h2>
-        <div id="message">Press SPACE to Serve</div>
-        <div class="controls">
-            Arrows: Move/Jump | Space: Swing Racket
+        <h2 id="scoreBoard">P1: 0 | P2: 0</h2>
+        <div id="message"></div>
+        <div class="controls-info">
+            <span><b>P1:</b> W,A,D + Space (Hit)</span>
+            <span id="p2Controls"><b>P2:</b> Arrows + P (Hit)</span>
         </div>
     </div>
 
@@ -49,68 +101,53 @@
     const ctx = canvas.getContext('2d');
     const uiScore = document.getElementById('scoreBoard');
     const uiMessage = document.getElementById('message');
+    const menuEl = document.getElementById('mainMenu');
+    const p2ControlsText = document.getElementById('p2Controls');
 
     // --- Game Constants ---
     const GRAVITY = 0.4;
-    const FRICTION = 0.85; // Ground friction
-    const AIR_RESISTANCE = 0.99;
     const NET_HEIGHT = 100;
     const NET_X = canvas.width / 2;
     const GROUND_Y = canvas.height - 30;
-    
-    // --- Tennis Scoring Constants ---
     const POINTS = ['0', '15', '30', '40'];
 
     // --- Game State ---
-    let gameState = 'SERVE'; // SERVE, PLAY, END
+    let gameState = 'MENU'; // MENU, SERVE, PLAY, END
+    let gameMode = 1; // 1 or 2
     let winner = null;
-    let server = 'player'; // Who is serving
+    let server = 1; // 1 or 2 (Player 1 or Player 2)
     
-    // Tennis Scoring State
-    let pScore = 0; // Index 0-3
-    let cScore = 0; // Index 0-3
-    let pAdvantage = false;
-    let cAdvantage = false;
+    // Scoring
+    let score1 = 0;
+    let score2 = 0;
+    let adv1 = false;
+    let adv2 = false;
 
     // --- Objects ---
 
-    const player = {
-        x: 100,
-        y: GROUND_Y,
-        w: 30,
-        h: 60,
-        vx: 0,
-        vy: 0,
-        speed: 5,
-        jumpPower: -10,
+    const p1 = {
+        x: 100, y: GROUND_Y, w: 30, h: 60,
+        vx: 0, vy: 0,
+        speed: 5, jumpPower: -10,
         color: 'white',
-        swinging: false,
-        swingTimer: 0
+        swinging: false, swingTimer: 0
     };
 
-    const cpu = {
-        x: 700,
-        y: GROUND_Y,
-        w: 30,
-        h: 60,
-        vx: 0,
-        vy: 0,
-        speed: 3.5, // Slightly slower than player
-        jumpPower: -10,
+    const p2 = {
+        x: 700, y: GROUND_Y, w: 30, h: 60,
+        vx: 0, vy: 0,
+        speed: 5, jumpPower: -10,
         color: '#ffcccc',
-        swinging: false,
-        swingTimer: 0
+        swinging: false, swingTimer: 0,
+        isCpu: true
     };
 
     const ball = {
-        x: 0,
-        y: 0,
-        radius: 6,
-        vx: 0,
-        vy: 0,
+        x: 0, y: 0, radius: 6,
+        vx: 0, vy: 0,
         color: 'yellow',
         bounces: 0,
-        lastHitter: null // 'player' or 'cpu'
+        lastHitter: 0 // 1 or 2
     };
 
     // --- Input Handling ---
@@ -118,372 +155,343 @@
 
     window.addEventListener('keydown', (e) => {
         keys[e.code] = true;
-        if (e.code === 'Space') {
-            if (gameState === 'END') resetGame();
-            else if (gameState === 'SERVE' && server === 'player') serveBall();
-            else attemptSwing(player);
+
+        if (gameState === 'MENU') return;
+
+        // Reset
+        if (e.code === 'Space' && gameState === 'END') {
+            resetMatch();
+            return;
         }
+
+        // Serving
+        if (gameState === 'SERVE') {
+            if (server === 1 && e.code === 'Space') serveBall();
+            else if (server === 2 && !p2.isCpu && e.code === 'KeyP') serveBall();
+            return;
+        }
+
+        // Swings
+        if (e.code === 'Space') attemptSwing(p1, 1);
+        if (e.code === 'KeyP' && !p2.isCpu) attemptSwing(p2, 2);
     });
 
     window.addEventListener('keyup', (e) => {
         keys[e.code] = false;
     });
 
-    // --- Core Logic Functions ---
+    // --- Menu Functions ---
 
-    function resetGame() {
-        pScore = 0;
-        cScore = 0;
-        pAdvantage = false;
-        cAdvantage = false;
+    function startGame(mode) {
+        gameMode = mode;
+        p2.isCpu = (mode === 1);
+        
+        // Update UI Text
+        if (mode === 1) {
+            p2ControlsText.innerHTML = "<b>CPU:</b> AI Controlled";
+            p2.speed = 3.5; // Slower for CPU fairness
+        } else {
+            p2ControlsText.innerHTML = "<b>P2:</b> Arrows + P (Hit)";
+            p2.speed = 5; // Same speed as P1
+        }
+
+        menuEl.classList.add('hidden');
+        resetMatch();
+    }
+
+    function resetMatch() {
+        score1 = 0; score2 = 0;
+        adv1 = false; adv2 = false;
         gameState = 'SERVE';
-        server = 'player';
+        server = 1;
         winner = null;
         updateUI();
         resetPositions();
     }
 
     function resetPositions() {
-        player.x = 100;
-        player.y = GROUND_Y - player.h;
-        player.vx = 0;
-        player.vy = 0;
+        p1.x = 100; p1.y = GROUND_Y - p1.h; p1.vx = 0; p1.vy = 0;
+        p2.x = 700; p2.y = GROUND_Y - p2.h; p2.vx = 0; p2.vy = 0;
 
-        cpu.x = 700;
-        cpu.y = GROUND_Y - cpu.h;
-        cpu.vx = 0;
-        cpu.vy = 0;
-
-        // Position ball based on server
-        if (server === 'player') {
-            ball.x = player.x + 20;
-            ball.y = player.y;
+        // Ball placement
+        if (server === 1) {
+            ball.x = p1.x + 20; ball.y = p1.y;
         } else {
-            ball.x = cpu.x - 20;
-            ball.y = cpu.y;
+            ball.x = p2.x - 20; ball.y = p2.y;
         }
         
-        ball.vx = 0;
-        ball.vy = 0;
+        ball.vx = 0; ball.vy = 0;
         ball.bounces = 0;
-        ball.lastHitter = null;
+        ball.lastHitter = 0;
     }
+
+    // --- Core Logic ---
 
     function serveBall() {
         gameState = 'PLAY';
         uiMessage.innerText = "";
-        ball.vy = -8; // Toss up
+        ball.vy = -8; // Toss
         ball.lastHitter = server;
         
-        // If CPU serves, give it some forward momentum automatically
-        if (server === 'cpu') {
-            ball.vx = -8; // Hit towards player
+        // CPU Serve Auto-hit
+        if (server === 2 && p2.isCpu) {
+            ball.vx = -8; 
             ball.vy = -7;
         }
     }
 
-    function attemptSwing(actor) {
-        // Set swing state for animation
+    function attemptSwing(actor, id) {
         actor.swinging = true;
-        actor.swingTimer = 10; // Frames to hold swing
+        actor.swingTimer = 10;
 
-        // Hitbox detection
+        // Hitbox
         const dx = ball.x - (actor.x + actor.w/2);
         const dy = ball.y - (actor.y + actor.h/2);
         const dist = Math.sqrt(dx*dx + dy*dy);
 
-        if (dist < 60) { // Reachable
-            // reset bounces on hit
+        if (dist < 60) {
             ball.bounces = 0;
+            const dir = (id === 1) ? 1 : -1;
             
-            // Determine direction
-            let dir = (actor === player) ? 1 : -1;
-            
-            // Aiming logic (simple) based on where ball is relative to racket center
+            // Aiming
             let lift = -8;
             if (ball.y < actor.y + 10) lift = -4; // Smash
             
-            // Apply Velocity
-            ball.vx = (10 + Math.random() * 2) * dir; // Power
+            ball.vx = (10 + Math.random() * 2) * dir;
             ball.vy = lift;
-            ball.lastHitter = (actor === player) ? 'player' : 'cpu';
+            ball.lastHitter = id;
         }
     }
 
-    function scorePoint(winnerName) {
+    function scorePoint(winnerId) {
         gameState = 'SERVE';
-        server = winnerName === 'player' ? 'cpu' : 'player'; // Loser usually serves, but let's swap
+        server = (winnerId === 1) ? 2 : 1; // Switch server
         
-        // Tennis Scoring Logic
-        if (winnerName === 'player') {
-            handleScoreUpdate('p');
-        } else {
-            handleScoreUpdate('c');
-        }
+        if (winnerId === 1) handleScoreUpdate(1);
+        else handleScoreUpdate(2);
 
         resetPositions();
         
-        if (server === 'cpu' && gameState !== 'END') {
+        // CPU Serve Delay
+        if (server === 2 && p2.isCpu && gameState !== 'END') {
             setTimeout(serveBall, 1000);
-        }
-    }
-
-    function handleScoreUpdate(who) {
-        // Logic for Standard Game + Deuce
-        if (pAdvantage || cAdvantage) {
-            if (who === 'p') {
-                if (pAdvantage) winGame('Player');
-                else if (cAdvantage) cAdvantage = false; // Back to Deuce
-                else pAdvantage = true; // Adv Player
-            } else {
-                if (cAdvantage) winGame('Computer');
-                else if (pAdvantage) pAdvantage = false; // Back to Deuce
-                else cAdvantage = true; // Adv CPU
-            }
-        } else {
-            // Normal scoring 0, 15, 30, 40
-            if (who === 'p') {
-                if (pScore === 3) {
-                    if (cScore === 3) pAdvantage = true; // Deuce -> Adv
-                    else winGame('Player');
-                } else {
-                    pScore++;
-                    if (pScore === 3 && cScore === 3) { /* Deuce logic handled visually */ }
-                }
-            } else {
-                if (cScore === 3) {
-                    if (pScore === 3) cAdvantage = true;
-                    else winGame('Computer');
-                } else {
-                    cScore++;
-                }
-            }
         }
         updateUI();
     }
 
-    function winGame(who) {
+    function handleScoreUpdate(who) {
+        // Deuce / Advantage Logic
+        if (adv1 || adv2) {
+            if (who === 1) {
+                if (adv1) winGame(1);
+                else if (adv2) adv2 = false; // Deuce
+                else adv1 = true;
+            } else {
+                if (adv2) winGame(2);
+                else if (adv1) adv1 = false; // Deuce
+                else adv2 = true;
+            }
+        } else {
+            // Standard Scoring
+            if (who === 1) {
+                if (score1 === 3) {
+                    if (score2 === 3) adv1 = true;
+                    else winGame(1);
+                } else {
+                    score1++;
+                }
+            } else {
+                if (score2 === 3) {
+                    if (score1 === 3) adv2 = true;
+                    else winGame(2);
+                } else {
+                    score2++;
+                }
+            }
+        }
+    }
+
+    function winGame(id) {
         gameState = 'END';
-        winner = who;
-        uiMessage.innerText = `${who} Wins the Game! Press Space to Reset.`;
+        const name = (id === 1) ? "Player 1" : (gameMode === 1 ? "CPU" : "Player 2");
+        uiMessage.innerText = `${name} Wins! Press Space to Reset.`;
     }
 
     function updateUI() {
         if (gameState === 'END') return;
 
-        let txtP = POINTS[pScore];
-        let txtC = POINTS[cScore];
+        let txt1 = POINTS[score1];
+        let txt2 = POINTS[score2];
 
-        if (pScore === 3 && cScore === 3) {
-            if (!pAdvantage && !cAdvantage) {
-                txtP = "40"; txtC = "40 (Deuce)";
-            } else if (pAdvantage) {
-                txtP = "Adv"; txtC = "40";
-            } else {
-                txtP = "40"; txtC = "Adv";
-            }
+        if (score1 === 3 && score2 === 3) {
+            if (!adv1 && !adv2) { txt1 = "40"; txt2 = "40 (Deuce)"; }
+            else if (adv1) { txt1 = "Adv"; txt2 = "40"; }
+            else { txt1 = "40"; txt2 = "Adv"; }
         }
 
-        uiScore.innerText = `Player: ${txtP} | CPU: ${txtC}`;
+        const p2Name = (gameMode === 1) ? "CPU" : "P2";
+        uiScore.innerText = `P1: ${txt1} | ${p2Name}: ${txt2}`;
+
         if (gameState === 'SERVE') {
-            uiMessage.innerText = `${server === 'player' ? "Player" : "CPU"} to Serve...`;
+            const sName = (server === 1) ? "Player 1" : p2Name;
+            const action = (server === 2 && p2.isCpu) ? "..." : " (Hit Key)";
+            uiMessage.innerText = `${sName} to Serve${action}`;
         }
     }
 
     // --- Update Loop ---
 
     function update() {
-        if (gameState === 'END') return;
+        if (gameState === 'MENU' || gameState === 'END') return;
 
-        // --- Player Movement ---
-        if (keys['ArrowLeft']) player.vx = -player.speed;
-        else if (keys['ArrowRight']) player.vx = player.speed;
-        else player.vx = 0;
+        // --- Player 1 Controls (WASD) ---
+        if (keys['KeyA']) p1.vx = -p1.speed;
+        else if (keys['KeyD']) p1.vx = p1.speed;
+        else p1.vx = 0;
 
-        if ((keys['ArrowUp'] || keys['KeyW']) && player.y + player.h >= GROUND_Y) {
-            player.vy = player.jumpPower;
-        }
+        if (keys['KeyW'] && p1.y + p1.h >= GROUND_Y) p1.vy = p1.jumpPower;
 
-        // Apply Player Physics
-        player.vy += GRAVITY;
-        player.x += player.vx;
-        player.y += player.vy;
+        applyPhysics(p1);
 
-        // Ground Collision
-        if (player.y + player.h > GROUND_Y) {
-            player.y = GROUND_Y - player.h;
-            player.vy = 0;
-        }
-
-        // Net Collision (Player)
-        if (player.x + player.w > NET_X && player.x < NET_X + 10) {
-             player.x = NET_X - player.w;
-        }
-
-        // --- CPU AI ---
-        if (gameState === 'PLAY') {
-            // Basic tracking
-            if (ball.x > NET_X && ball.vx > 0) {
-                // Ball is coming to CPU
+        // --- Player 2 Logic ---
+        if (p2.isCpu) {
+            // AI Logic
+            if (gameState === 'PLAY' && ball.x > NET_X && ball.vx > 0) {
                 let targetX = ball.x;
-                if (cpu.x < targetX - 10) cpu.vx = cpu.speed;
-                else if (cpu.x > targetX + 10) cpu.vx = -cpu.speed;
-                else cpu.vx = 0;
+                if (p2.x < targetX - 10) p2.vx = p2.speed;
+                else if (p2.x > targetX + 10) p2.vx = -p2.speed;
+                else p2.vx = 0;
 
-                // Jump if ball is high
-                if (ball.y < cpu.y && cpu.y + cpu.h >= GROUND_Y && ball.x > cpu.x - 50) {
-                     cpu.vy = cpu.jumpPower;
+                if (ball.y < p2.y && p2.y + p2.h >= GROUND_Y && ball.x > p2.x - 50) {
+                     p2.vy = p2.jumpPower;
                 }
 
-                // Swing
-                const dist = Math.abs(ball.x - cpu.x) + Math.abs(ball.y - cpu.y);
-                if (dist < 60 && Math.abs(ball.x - cpu.x) < 40) {
-                    attemptSwing(cpu);
+                if (Math.abs(ball.x - p2.x) < 40 && Math.abs(ball.y - p2.y) < 60) {
+                    attemptSwing(p2, 2);
                 }
             } else {
                 // Return to center
-                if (cpu.x < 650) cpu.vx = cpu.speed;
-                else if (cpu.x > 700) cpu.vx = -cpu.speed;
-                else cpu.vx = 0;
+                if (p2.x < 650) p2.vx = p2.speed;
+                else if (p2.x > 700) p2.vx = -p2.speed;
+                else p2.vx = 0;
             }
+        } else {
+            // Human Controls (Arrows)
+            if (keys['ArrowLeft']) p2.vx = -p2.speed;
+            else if (keys['ArrowRight']) p2.vx = p2.speed;
+            else p2.vx = 0;
+
+            if (keys['ArrowUp'] && p2.y + p2.h >= GROUND_Y) p2.vy = p2.jumpPower;
         }
 
-        // Apply CPU Physics
-        cpu.vy += GRAVITY;
-        cpu.x += cpu.vx;
-        cpu.y += cpu.vy;
+        applyPhysics(p2);
 
-        if (cpu.y + cpu.h > GROUND_Y) {
-            cpu.y = GROUND_Y - cpu.h;
-            cpu.vy = 0;
-        }
-        // Net Collision (CPU)
-        if (cpu.x < NET_X + 10) {
-            cpu.x = NET_X + 10;
-        }
-
+        // Net Collisions (Players)
+        if (p1.x + p1.w > NET_X && p1.x < NET_X + 10) p1.x = NET_X - p1.w;
+        if (p2.x < NET_X + 10) p2.x = NET_X + 10;
 
         // --- Ball Physics ---
         if (gameState === 'PLAY') {
-            ball.vy += GRAVITY * 0.5; // Lighter gravity for ball
-            ball.vx *= AIR_RESISTANCE;
-
+            ball.vy += GRAVITY * 0.5;
+            ball.vx *= 0.99; // Air resistance
             ball.x += ball.vx;
             ball.y += ball.vy;
 
             // Net Collision (Ball)
-            // Net is at NET_X, height NET_HEIGHT (from ground up)
-            // Ground is GROUND_Y. Top of net is GROUND_Y - NET_HEIGHT.
             if (ball.y > GROUND_Y - NET_HEIGHT) {
                 if (Math.abs(ball.x - NET_X) < ball.radius + 5) {
-                    ball.vx *= -0.8; // Bounce off net horizontally
+                    ball.vx *= -0.8; 
                 }
             }
 
-            // Ground Collision (Bounce Logic)
+            // Floor
             if (ball.y + ball.radius > GROUND_Y) {
                 ball.y = GROUND_Y - ball.radius;
-                ball.vy *= -0.7; // Bounce dampening
-                
-                // If velocity is very low, stop bouncing
+                ball.vy *= -0.7;
                 if (Math.abs(ball.vy) < 2) ball.vy = 0;
-
                 ball.bounces++;
-                checkPointCondition();
+                checkConditions();
             }
 
-            // Wall Collision (Out of bounds)
-            if (ball.x < 0 || ball.x > canvas.width) {
-                 checkPointCondition(true);
-            }
+            // Walls
+            if (ball.x < 0 || ball.x > canvas.width) checkConditions(true);
+
         } else if (gameState === 'SERVE') {
-            // Ball follows the server
-             if (server === 'player') {
-                ball.x = player.x + 20;
-                ball.y = player.y + 20;
+            if (server === 1) {
+                ball.x = p1.x + 20; ball.y = p1.y + 20;
             } else {
-                ball.x = cpu.x - 20;
-                ball.y = cpu.y + 20;
+                ball.x = p2.x - 20; ball.y = p2.y + 20;
             }
         }
 
         // Swing Timers
-        if (player.swingTimer > 0) player.swingTimer--;
-        else player.swinging = false;
-        
-        if (cpu.swingTimer > 0) cpu.swingTimer--;
-        else cpu.swinging = false;
+        if (p1.swingTimer > 0) p1.swingTimer--; else p1.swinging = false;
+        if (p2.swingTimer > 0) p2.swingTimer--; else p2.swinging = false;
     }
 
-    function checkPointCondition(isOut = false) {
-        // 1. Double Bounce Logic
+    function applyPhysics(obj) {
+        obj.vy += GRAVITY;
+        obj.x += obj.vx;
+        obj.y += obj.vy;
+        if (obj.y + obj.h > GROUND_Y) {
+            obj.y = GROUND_Y - obj.h;
+            obj.vy = 0;
+        }
+    }
+
+    function checkConditions(isOut = false) {
         if (ball.bounces >= 2) {
-            // Who let it bounce twice?
-            if (ball.x < NET_X) scorePoint('cpu'); // Bounced twice on player side
-            else scorePoint('player'); // Bounced twice on cpu side
+            if (ball.x < NET_X) scorePoint(2); 
+            else scorePoint(1);
             return;
         }
-
-        // 2. Out of bounds Logic (Wall or single bounce check)
-        // If it bounces once, it's okay, IF it was hit by the opponent onto this side.
-        // We need to know where it landed.
-        
-        // Actually, simpler logic for this arcade style:
-        // If it bounces on YOUR side, you must hit it.
-        // If it bounces on YOUR side and you don't hit it before 2nd bounce -> point lost.
-        // If you hit it and it lands OUT (past canvas width), you lose point.
-        
         if (isOut) {
-            // Who hit it last? They lose the point.
-            if (ball.lastHitter === 'player') scorePoint('cpu');
-            else scorePoint('player');
+            if (ball.lastHitter === 1) scorePoint(2);
+            else scorePoint(1);
         }
     }
 
-    // --- Draw Loop ---
-
+    // --- Draw ---
     function draw() {
-        // Clear Background
+        // Bg
         ctx.fillStyle = '#4a8f4a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Court Lines
+        // Lines
         ctx.strokeStyle = 'white';
         ctx.lineWidth = 4;
         ctx.beginPath();
-        // Baseline left
-        ctx.moveTo(50, GROUND_Y); ctx.lineTo(50, GROUND_Y + 30); // simplistic visual
-        // Baseline right
-        ctx.moveTo(750, GROUND_Y); ctx.lineTo(750, GROUND_Y + 30); 
-        // Center line
+        ctx.moveTo(50, GROUND_Y); ctx.lineTo(50, GROUND_Y+30);
+        ctx.moveTo(750, GROUND_Y); ctx.lineTo(750, GROUND_Y+30);
         ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y);
         ctx.stroke();
 
-        // Draw Net
+        // Net
         ctx.fillStyle = '#eee';
         ctx.fillRect(NET_X - 2, GROUND_Y - NET_HEIGHT, 4, NET_HEIGHT);
 
-        // Draw Player
-        ctx.fillStyle = player.swinging ? '#ffff00' : player.color;
-        ctx.fillRect(player.x, player.y, player.w, player.h);
-        
-        // Draw Racket (Visual only)
-        if (player.swinging) {
-            ctx.strokeStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(player.x + player.w + 10, player.y + 30, 15, 0, Math.PI*2);
-            ctx.stroke();
-        }
+        // P1
+        ctx.fillStyle = p1.swinging ? '#ffff00' : p1.color;
+        ctx.fillRect(p1.x, p1.y, p1.w, p1.h);
+        if (p1.swinging) drawRacket(p1, 1);
 
-        // Draw CPU
-        ctx.fillStyle = cpu.swinging ? '#ff5555' : cpu.color;
-        ctx.fillRect(cpu.x, cpu.y, cpu.w, cpu.h);
+        // P2
+        ctx.fillStyle = p2.swinging ? '#ff5555' : p2.color;
+        ctx.fillRect(p2.x, p2.y, p2.w, p2.h);
+        if (p2.swinging) drawRacket(p2, -1);
 
-        // Draw Ball
+        // Ball
         ctx.fillStyle = ball.color;
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.stroke();
+    }
+
+    function drawRacket(actor, dir) {
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(actor.x + (actor.w/2) + (20*dir), actor.y + 30, 15, 0, Math.PI*2);
         ctx.stroke();
     }
 
@@ -493,8 +501,6 @@
         requestAnimationFrame(loop);
     }
 
-    // Start
-    resetPositions();
     loop();
 
 </script>
