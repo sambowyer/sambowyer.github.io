@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2D Arcade Tennis - Mobile Edition</title>
+    <title>🎾 tennis 🎾</title>
     <style>
         body {
             background-color: #222;
@@ -12,11 +12,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Changed to start so scrolling works if needed */
+            justify-content: flex-start;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevent scrolling the whole page */
-            touch-action: none; /* Disable browser zooming/swiping */
+            overflow: hidden;
+            touch-action: none;
         }
         
         #gameContainer {
@@ -27,25 +27,23 @@
             max-width: 100%;
         }
 
-        /* Make canvas responsive */
         canvas {
             background: #4a8f4a;
             display: block;
-            width: 100%; /* responsive width */
-            height: auto; /* maintain aspect ratio */
-            max-height: 60vh; /* Leave room for buttons */
+            width: 100%;
+            height: auto;
+            max-height: 60vh;
         }
         
         #ui {
             margin-top: 5px;
             text-align: center;
             width: 100%;
-            pointer-events: none; /* Let clicks pass through UI text */
+            pointer-events: none;
         }
 
-        /* Mobile Controls Styling */
         #mobileControls {
-            display: none; /* Hidden by default */
+            display: none;
             width: 100%;
             padding: 10px 20px;
             box-sizing: border-box;
@@ -55,85 +53,74 @@
             touch-action: none;
         }
 
-        .dpad {
-            display: flex;
-            gap: 10px;
-        }
-
+        .dpad { display: flex; gap: 10px; }
         .touch-btn {
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.5);
-            color: white;
-            font-size: 24px;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-            cursor: pointer;
+            color: white; font-size: 24px;
+            border-radius: 50%; width: 60px; height: 60px;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none; cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
-        
         .touch-btn:active, .touch-btn.pressed {
-            background: rgba(255, 255, 255, 0.6);
-            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.6); transform: scale(0.95);
         }
-
         #btnSwing {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(255, 255, 0, 0.2);
-            border-color: yellow;
-            font-weight: bold;
-            font-size: 16px;
+            width: 80px; height: 80px;
+            background: rgba(255, 255, 0, 0.2); border-color: yellow;
+            font-weight: bold; font-size: 16px;
         }
 
-        /* Main Menu Overlay */
         #mainMenu {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
             z-index: 10;
         }
-        h1 { font-size: 2rem; margin-bottom: 20px; text-shadow: 2px 2px #4a8f4a; text-align: center; }
+        h1 { font-size: 2rem; margin-bottom: 10px; text-shadow: 2px 2px #4a8f4a; text-align: center; }
+        .menu-section { margin-bottom: 20px; text-align: center; }
+        .menu-label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
         button.menu-btn {
-            background: #fff;
-            color: #222;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            font-family: inherit;
-            cursor: pointer;
-            margin: 10px;
-            font-weight: bold;
-            transition: 0.2s;
+            background: #fff; color: #222; border: none; padding: 10px 20px; font-size: 1rem;
+            font-family: inherit; cursor: pointer; margin: 5px; font-weight: bold; transition: 0.2s;
         }
+        button.menu-btn:hover { background: #4a8f4a; color: white; }
+        .map-btn {
+            background: #444; color: #fff; border: 2px solid #666; padding: 8px 12px; cursor: pointer; margin: 0 2px;
+        }
+        .map-btn.selected { background: #4a8f4a; border-color: #fff; }
         .hidden { display: none !important; }
+        
+        #effectIndicator {
+            color: yellow; font-weight: bold; height: 20px; font-size: 0.9rem; margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
 
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="450"></canvas>
-        
         <div id="mainMenu">
-            <h1>CHAOS TENNIS<br>MOBILE</h1>
-            <button class="menu-btn" onclick="startGame(1)">1 PLAYER (vs CPU)</button>
-            <button class="menu-btn" onclick="startGame(2)">2 PLAYER (PvP)</button>
+            <h1>🎾 TENNIS 🎾</h1>
+            <div class="menu-section">
+                <span class="menu-label">SELECT COURT:</span>
+                <button class="map-btn selected" onclick="selectMap(0, this)">Standard</button>
+                <button class="map-btn" onclick="selectMap(1, this)">Walled</button>
+                <button class="map-btn" onclick="selectMap(2, this)">Obstacles</button>
+            </div>
+            <div class="menu-section">
+                <span class="menu-label">START GAME:</span>
+                <button class="menu-btn" onclick="startGame(1)">1 PLAYER</button>
+                <button class="menu-btn" onclick="startGame(2)">2 PLAYER</button>
+            </div>
         </div>
     </div>
     
     <div id="ui">
+        <div id="effectIndicator"></div>
         <h3 id="scoreBoard">P1: 0 | CPU: 0</h3>
         <div id="message"></div>
     </div>
@@ -152,130 +139,122 @@
     const ctx = canvas.getContext('2d');
     const uiScore = document.getElementById('scoreBoard');
     const uiMessage = document.getElementById('message');
+    const uiEffect = document.getElementById('effectIndicator');
     const menuEl = document.getElementById('mainMenu');
     const mobileControls = document.getElementById('mobileControls');
 
-    // --- Game Constants ---
+    // --- Constants ---
     const GRAVITY = 0.4;
     const NET_HEIGHT = 100;
     const NET_X = canvas.width / 2;
     const GROUND_Y = canvas.height - 30;
     const POINTS = ['0', '15', '30', '40'];
+    const BASELINE_L = 50;
+    const BASELINE_R = 750;
 
-    // --- Game State ---
+    // --- State ---
     let gameState = 'MENU'; 
     let gameMode = 1; 
-    let winner = null;
+    let selectedMap = 0; 
     let server = 1; 
-    
     let score1 = 0; let score2 = 0;
     let adv1 = false; let adv2 = false;
+
+    // --- Effects State ---
+    let effectTimer = 0;
+    let currentEffect = 'NONE';
 
     // --- Objects ---
     const p1 = {
         x: 100, y: GROUND_Y, w: 30, h: 60,
-        vx: 0, vy: 0, speed: 5, jumpPower: -10,
-        color: 'white', swinging: false, swingTimer: 0
+        vx: 0, vy: 0, 
+        baseSpeed: 5, currentSpeed: 5, 
+        jumpPower: -10, color: 'white', swinging: false, swingTimer: 0
     };
 
     const p2 = {
         x: 700, y: GROUND_Y, w: 30, h: 60,
-        vx: 0, vy: 0, speed: 5, jumpPower: -10,
-        color: '#ffcccc', swinging: false, swingTimer: 0, isCpu: true
+        vx: 0, vy: 0, 
+        baseSpeed: 5, currentSpeed: 5,
+        jumpPower: -10, color: '#ffcccc', swinging: false, swingTimer: 0, isCpu: true
     };
 
     const ball = {
         x: 0, y: 0, radius: 6,
         vx: 0, vy: 0, color: 'yellow',
-        bounces: 0, lastHitter: 0
+        bounces: 0, 
+        lastHitter: 0,
+        currentSide: 0 // 1 = left, 2 = right
     };
 
     const powerUp = {
         x: -100, y: -100, radius: 20, vx: 0, vy: 0,
-        visible: false, active: false, nextSpawnTime: 0, despawnTime: 0
+        visible: false, active: false, 
+        type: 0, // 0=Chaos, 1=Purple, 2=Clock
+        nextSpawnTime: 0, despawnTime: 0
     };
 
-    // --- Input Handling ---
+    const obstacles = [
+        { x: 200, y: 150, r: 25 }, { x: 400, y: 100, r: 25 }, { x: 600, y: 150, r: 25 }
+    ];
+
+    // --- Input ---
     const keys = {};
-
-    window.addEventListener('keydown', (e) => {
-        keys[e.code] = true;
-        handleGlobalInput(e.code);
-    });
-
+    window.addEventListener('keydown', (e) => { keys[e.code] = true; handleGlobalInput(e.code); });
     window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-    // Helper for both keyboard and mobile touch
     function handleGlobalInput(code) {
         if (gameState === 'MENU') return;
-        
-        // Reset Logic
         if (code === 'Space' && gameState === 'END') { resetMatch(); return; }
-
-        // Serve Logic
         if (gameState === 'SERVE') {
             if (server === 1 && code === 'Space') serveBall();
             else if (server === 2 && !p2.isCpu && code === 'KeyP') serveBall();
             return;
         }
-
-        // Swing Logic
         if (code === 'Space') attemptSwing(p1, 1);
         if (code === 'KeyP' && !p2.isCpu) attemptSwing(p2, 2);
     }
 
-    // --- Mobile Touch Setup ---
     function setupTouchBtn(id, code) {
         const btn = document.getElementById(id);
-        
-        const press = (e) => {
-            e.preventDefault(); 
-            keys[code] = true; 
-            btn.classList.add('pressed');
-            // Trigger logic immediately for "tap" events like Hit/Serve
-            handleGlobalInput(code);
-        };
-        
-        const release = (e) => {
-            e.preventDefault(); 
-            keys[code] = false; 
-            btn.classList.remove('pressed');
-        };
-
+        const press = (e) => { e.preventDefault(); keys[code] = true; btn.classList.add('pressed'); handleGlobalInput(code); };
+        const release = (e) => { e.preventDefault(); keys[code] = false; btn.classList.remove('pressed'); };
         btn.addEventListener('touchstart', press, {passive: false});
         btn.addEventListener('touchend', release, {passive: false});
-        btn.addEventListener('mousedown', press); // For mouse testing on desktop
-        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mousedown', press); btn.addEventListener('mouseup', release);
     }
+    setupTouchBtn('btnLeft', 'KeyA'); setupTouchBtn('btnRight', 'KeyD');
+    setupTouchBtn('btnJump', 'KeyW'); setupTouchBtn('btnSwing', 'Space');
 
-    // Map the mobile buttons to the keyboard keys Player 1 uses (WASD + Space)
-    setupTouchBtn('btnLeft', 'KeyA');
-    setupTouchBtn('btnRight', 'KeyD');
-    setupTouchBtn('btnJump', 'KeyW');
-    setupTouchBtn('btnSwing', 'Space');
+    // --- Logic ---
 
-
-    // --- Menu Functions ---
+    function selectMap(type, btn) {
+        selectedMap = type;
+        document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
 
     function startGame(mode) {
         gameMode = mode;
         p2.isCpu = (mode === 1);
-        p2.speed = (mode === 1) ? 3.5 : 5;
         
-        // Toggle Mobile Controls
+        // NERF: CPU Speed Logic
         if (mode === 1) {
-            mobileControls.style.display = 'flex';
+            if (selectedMap === 0) p2.baseSpeed = 3.5; // Standard
+            else p2.baseSpeed = 2.8; // Walled/Obstacles (More clumsy)
         } else {
-            mobileControls.style.display = 'none';
+            p2.baseSpeed = 5;
         }
 
+        mobileControls.style.display = (mode === 1) ? 'flex' : 'none';
         menuEl.classList.add('hidden');
         resetMatch();
     }
 
     function resetMatch() {
         score1 = 0; score2 = 0; adv1 = false; adv2 = false;
-        gameState = 'SERVE'; server = 1; winner = null;
+        gameState = 'SERVE'; server = 1; 
+        clearEffects();
         updateUI();
         resetPositions();
     }
@@ -283,29 +262,68 @@
     function resetPositions() {
         p1.x = 100; p1.y = GROUND_Y - p1.h; p1.vx = 0; p1.vy = 0;
         p2.x = 700; p2.y = GROUND_Y - p2.h; p2.vx = 0; p2.vy = 0;
+        
+        // Reset Ball
         ball.x = (server === 1) ? p1.x + 20 : p2.x - 20;
         ball.y = (server === 1) ? p1.y : p2.y;
-        ball.vx = 0; ball.vy = 0; ball.bounces = 0; ball.lastHitter = 0;
-        resetPowerUp();
+        ball.vx = 0; ball.vy = 0; 
+        ball.bounces = 0; ball.lastHitter = 0;
+        // Set initial side
+        ball.currentSide = (ball.x < NET_X) ? 1 : 2; 
+
+        resetPowerUpObj(); 
     }
 
-    // --- Power Up Logic (Same as before) ---
-    function resetPowerUp() {
-        powerUp.visible = false; powerUp.active = false; powerUp.x = -100; powerUp.vx = 0; powerUp.vy = 0;
-        powerUp.nextSpawnTime = Date.now() + 15000;
+    function clearEffects() {
+        currentEffect = 'NONE';
+        uiEffect.innerText = "";
+        ball.color = 'yellow';
+        p1.currentSpeed = p1.baseSpeed;
+        p2.currentSpeed = p2.baseSpeed;
     }
+
+    function resetPowerUpObj() {
+        powerUp.visible = false; powerUp.active = false; powerUp.x = -100; 
+        powerUp.vx = 0; powerUp.vy = 0;
+        powerUp.nextSpawnTime = Date.now() + 5000 + Math.random() * 5000;
+    }
+
     function spawnPowerUp() {
-        powerUp.x = 250 + Math.random() * 300; powerUp.y = 100 + Math.random() * 150;
+        powerUp.x = 250 + Math.random() * 300; 
+        powerUp.y = 100 + Math.random() * 150;
+        powerUp.type = Math.floor(Math.random() * 3);
         powerUp.visible = true;
     }
-    function activatePowerUp() {
-        powerUp.visible = false; powerUp.active = true;
-        powerUp.vx = (Math.random() > 0.5 ? 1 : -1) * (6 + Math.random() * 4);
-        powerUp.vy = -(6 + Math.random() * 6);
-        powerUp.despawnTime = Date.now() + (5000 + Math.random() * 5000);
+
+    function activatePowerUp(hitterId) {
+        powerUp.visible = false;
+        const duration = 5000 + Math.random() * 5000;
+        effectTimer = Date.now() + duration;
+
+        if (powerUp.type === 0) { // Chaos
+            powerUp.active = true;
+            powerUp.vx = (Math.random() > 0.5 ? 1 : -1) * (6 + Math.random() * 4);
+            powerUp.vy = -(6 + Math.random() * 6);
+            powerUp.despawnTime = effectTimer;
+        } 
+        else if (powerUp.type === 1) { // Purple Ball
+            currentEffect = 'PURPLE';
+            ball.color = '#8A2BE2'; 
+            uiEffect.innerText = "SUPER BOUNCE ACTIVE!";
+        } 
+        else if (powerUp.type === 2) { // Clock
+            currentEffect = 'CLOCK';
+            if (hitterId === 1) {
+                p1.currentSpeed = 8; p2.currentSpeed = 2;
+                uiEffect.innerText = "SPEED BOOST: P1";
+            } else {
+                p2.currentSpeed = 8; p1.currentSpeed = 2;
+                uiEffect.innerText = "SPEED BOOST: " + (gameMode===1?"CPU":"P2");
+            }
+        }
     }
 
-    // --- Core Logic ---
+    // --- Core Game Loop ---
 
     function serveBall() {
         gameState = 'PLAY';
@@ -315,12 +333,14 @@
     }
 
     function attemptSwing(actor, id) {
-        if(actor.swinging) return; // Prevent spamming
+        if(actor.swinging) return;
         actor.swinging = true; actor.swingTimer = 10;
         const dx = ball.x - (actor.x + actor.w/2);
         const dy = ball.y - (actor.y + actor.h/2);
         if (Math.sqrt(dx*dx + dy*dy) < 60) {
-            ball.bounces = 0;
+            // NOTE: We do NOT reset bounces here anymore.
+            // Bounces only reset when crossing the net.
+            
             const dir = (id === 1) ? 1 : -1;
             let lift = (ball.y < actor.y + 10) ? -4 : -8;
             ball.vx = (10 + Math.random() * 2) * dir;
@@ -329,22 +349,200 @@
         }
     }
 
-    function scorePoint(winnerId) {
-        gameState = 'SERVE'; server = (winnerId === 1) ? 2 : 1;
-        handleScoreUpdate(winnerId);
-        resetPositions();
-        if (server === 2 && p2.isCpu && gameState !== 'END') setTimeout(serveBall, 1000);
-        updateUI();
+    function update() {
+        if (gameState === 'MENU' || gameState === 'END') return;
+
+        // Effect Expiration
+        if (currentEffect !== 'NONE' && Date.now() > effectTimer) {
+            clearEffects();
+        }
+
+        // P1 Move
+        if (keys['KeyA']) p1.vx = -p1.currentSpeed;
+        else if (keys['KeyD']) p1.vx = p1.currentSpeed;
+        else p1.vx = 0;
+        if (keys['KeyW'] && p1.y + p1.h >= GROUND_Y) p1.vy = p1.jumpPower;
+        applyPhysics(p1);
+
+        // P2 (CPU)
+        if (p2.isCpu) {
+            let shouldChase = false;
+            let targetX = ball.x;
+
+            if (gameState === 'PLAY') {
+                if (selectedMap === 0) {
+                    if (ball.x > NET_X - 50 && ball.x < BASELINE_R + 20) shouldChase = true;
+                } else {
+                    if (ball.x > NET_X - 50) shouldChase = true;
+                }
+            }
+
+            if (shouldChase) {
+                if (p2.x < targetX - 10) p2.vx = p2.currentSpeed;
+                else if (p2.x > targetX + 10) p2.vx = -p2.currentSpeed;
+                else p2.vx = 0;
+
+                if (ball.y < p2.y && p2.y + p2.h >= GROUND_Y && Math.abs(ball.x - p2.x) < 50) {
+                    p2.vy = p2.jumpPower;
+                }
+                if (Math.abs(ball.x - p2.x) < 45 && Math.abs(ball.y - p2.y) < 65) {
+                    attemptSwing(p2, 2);
+                }
+            } else {
+                if (p2.x < 650) p2.vx = p2.currentSpeed;
+                else if (p2.x > 700) p2.vx = -p2.currentSpeed;
+                else p2.vx = 0;
+            }
+        } else {
+            // P2 Human
+            if (keys['ArrowLeft']) p2.vx = -p2.currentSpeed;
+            else if (keys['ArrowRight']) p2.vx = p2.currentSpeed;
+            else p2.vx = 0;
+            if (keys['ArrowUp'] && p2.y + p2.h >= GROUND_Y) p2.vy = p2.jumpPower;
+        }
+        applyPhysics(p2);
+
+        // Collisions
+        if (p1.x+p1.w > NET_X && p1.x < NET_X+10) p1.x = NET_X-p1.w;
+        if (p2.x < NET_X+10) p2.x = NET_X+10;
+
+        // Ball Logic
+        if (gameState === 'PLAY') {
+            ball.vy += GRAVITY * 0.5; ball.vx *= 0.99;
+            ball.x += ball.vx; ball.y += ball.vy;
+
+            // TRACK SIDE & RESET BOUNCES ON NET CROSS
+            let newSide = (ball.x < NET_X) ? 1 : 2;
+            if (newSide !== ball.currentSide) {
+                ball.bounces = 0; // The ball crossed the net! Reset bounce count.
+                ball.currentSide = newSide;
+            }
+
+            // Net Bounce
+            if (ball.y > GROUND_Y - NET_HEIGHT && Math.abs(ball.x - NET_X) < ball.radius + 5) {
+                ball.vx *= -0.8;
+            }
+
+            // Obstacles
+            if (selectedMap === 2) {
+                obstacles.forEach(obs => { if (checkCircleCollision(ball, obs)) resolveCircleBounce(ball, obs); });
+            }
+
+            // PowerUps
+            const now = Date.now();
+            if (!powerUp.visible && !powerUp.active && now > powerUp.nextSpawnTime) spawnPowerUp();
+            if (powerUp.visible && checkCircleCollision(ball, powerUp)) activatePowerUp(ball.lastHitter);
+
+            if (powerUp.active) {
+                powerUp.vy += GRAVITY; powerUp.x += powerUp.vx; powerUp.y += powerUp.vy;
+                if (powerUp.y + powerUp.radius > GROUND_Y) { 
+                    powerUp.y = GROUND_Y - powerUp.radius; powerUp.vy *= -0.95; 
+                }
+                if (powerUp.x - powerUp.radius < 0 || powerUp.x + powerUp.radius > canvas.width) powerUp.vx *= -1;
+                if (checkCircleCollision(ball, powerUp)) resolveCircleBounce(ball, powerUp);
+                if (now > powerUp.despawnTime) { powerUp.active = false; resetPowerUpObj(); }
+            }
+
+            // Ground Bounce & Scoring
+            if (ball.y + ball.radius > GROUND_Y) {
+                
+                // FIX: Check if OUT on FIRST bounce (Standard Map only)
+                if (selectedMap === 0 && ball.bounces === 0) {
+                     if (ball.x < BASELINE_L || ball.x > BASELINE_R) {
+                         // Landed out. WHO HIT IT? They lose.
+                         if (ball.lastHitter === 1) scorePoint(2); 
+                         else scorePoint(1);
+                         return;
+                     }
+                }
+
+                ball.y = GROUND_Y - ball.radius; 
+                
+                // Physics
+                if (currentEffect === 'PURPLE') {
+                    ball.vy *= -1.1; 
+                    if (ball.vy < -18) ball.vy = -18;
+                } else {
+                    ball.vy *= -0.7;
+                    if (Math.abs(ball.vy) < 2) ball.vy = 0;
+                }
+
+                ball.bounces++; 
+                
+                // Check Lose Condition (Double Bounce)
+                if (ball.bounces >= 2) { 
+                    // Who lost? The side the ball is on.
+                    if (ball.x < NET_X) scorePoint(2); // P1 lost
+                    else scorePoint(1); // P2 lost
+                }
+            }
+            
+            // Wall / Fly-Out Logic
+            if (selectedMap === 0) {
+                // If it flies off screen, the hitter loses
+                if (ball.x < 0 || ball.x > canvas.width) {
+                    if (ball.lastHitter === 1) scorePoint(2); 
+                    else scorePoint(1);
+                }
+            } else {
+                if (ball.x < ball.radius) { ball.x = ball.radius; ball.vx *= -0.8; }
+                if (ball.x > canvas.width - ball.radius) { ball.x = canvas.width - ball.radius; ball.vx *= -0.8; }
+            }
+
+        } else if (gameState === 'SERVE') {
+             ball.x = (server===1 ? p1.x+20 : p2.x-20); ball.y = (server===1 ? p1.y+20 : p2.y+20);
+             ball.currentSide = (server===1) ? 1 : 2;
+        }
+
+        if (p1.swingTimer>0) p1.swingTimer--; else p1.swinging=false;
+        if (p2.swingTimer>0) p2.swingTimer--; else p2.swinging=false;
     }
 
-    function handleScoreUpdate(who) {
+    // --- Helpers ---
+    function applyPhysics(obj) {
+        obj.vy += GRAVITY; obj.x += obj.vx; obj.y += obj.vy;
+        if (obj.y+obj.h > GROUND_Y) { obj.y = GROUND_Y-obj.h; obj.vy = 0; }
+        if (obj.x < 0) obj.x = 0;
+        if (obj.x > canvas.width - obj.w) obj.x = canvas.width - obj.w;
+    }
+
+    function checkCircleCollision(c1, c2) {
+        const dx = c1.x - c2.x; const dy = c1.y - c2.y;
+        return Math.sqrt(dx*dx + dy*dy) < (c1.radius || c1.r) + (c2.radius || c2.r);
+    }
+
+    function resolveCircleBounce(moving, staticObj, forceMult=1.0) {
+        const dx = moving.x - staticObj.x; const dy = moving.y - staticObj.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const angle = Math.atan2(dy, dx);
+        const overlap = (moving.radius + (staticObj.radius || staticObj.r)) - dist;
+        moving.x += Math.cos(angle) * (overlap + 1);
+        moving.y += Math.sin(angle) * (overlap + 1);
+        
+        if (staticObj === powerUp && powerUp.active) {
+            const speed = 8;
+            moving.vx = Math.cos(angle) * speed; moving.vy = Math.sin(angle) * speed;
+            staticObj.vx = -Math.cos(angle) * speed; staticObj.vy = -Math.sin(angle) * speed;
+        } else {
+            const nx = dx/dist; const ny = dy/dist;
+            const dot = moving.vx * nx + moving.vy * ny;
+            moving.vx = (moving.vx - 2*dot*nx)*1.1; moving.vy = (moving.vy - 2*dot*ny)*1.1;
+        }
+    }
+
+    function scorePoint(winnerId) {
+        gameState = 'SERVE'; server = (winnerId === 1) ? 2 : 1;
+        
         if (adv1 || adv2) {
-            if (who === 1) { if (adv1) winGame(1); else if (adv2) adv2 = false; else adv1 = true; }
+            if (winnerId === 1) { if (adv1) winGame(1); else if (adv2) adv2 = false; else adv1 = true; }
             else { if (adv2) winGame(2); else if (adv1) adv1 = false; else adv2 = true; }
         } else {
-            if (who === 1) { if (score1 === 3) { if (score2 === 3) adv1 = true; else winGame(1); } else score1++; }
+            if (winnerId === 1) { if (score1 === 3) { if (score2 === 3) adv1 = true; else winGame(1); } else score1++; }
             else { if (score2 === 3) { if (score1 === 3) adv2 = true; else winGame(2); } else score2++; }
         }
+        updateUI();
+        resetPositions();
+        if (server === 2 && p2.isCpu && gameState !== 'END') setTimeout(serveBall, 1000);
     }
 
     function winGame(id) {
@@ -359,112 +557,42 @@
         if (score1 === 3 && score2 === 3) {
             if (!adv1 && !adv2) { t1="40"; t2="40 (Deuce)"; } else if (adv1) { t1="Adv"; t2="40"; } else { t1="40"; t2="Adv"; }
         }
-        const p2N = (gameMode === 1) ? "CPU" : "P2";
-        uiScore.innerText = `P1: ${t1} | ${p2N}: ${t2}`;
-        if (gameState === 'SERVE') uiMessage.innerText = `${(server===1)?"P1":p2N} Serve`;
-    }
-
-    // --- Update Loop ---
-
-    function update() {
-        if (gameState === 'MENU' || gameState === 'END') return;
-
-        // P1 Controls (Using keys that are mapped from Mobile buttons or Keyboard)
-        if (keys['KeyA']) p1.vx = -p1.speed; else if (keys['KeyD']) p1.vx = p1.speed; else p1.vx = 0;
-        if (keys['KeyW'] && p1.y + p1.h >= GROUND_Y) p1.vy = p1.jumpPower;
-        applyPhysics(p1);
-
-        // P2 Controls
-        if (p2.isCpu) {
-            if (gameState === 'PLAY' && ball.x > NET_X && ball.vx > 0) {
-                if (p2.x < ball.x - 10) p2.vx = p2.speed; else if (p2.x > ball.x + 10) p2.vx = -p2.speed; else p2.vx=0;
-                if (ball.y < p2.y && p2.y + p2.h >= GROUND_Y && ball.x > p2.x - 50) p2.vy = p2.jumpPower;
-                if (Math.abs(ball.x - p2.x) < 40 && Math.abs(ball.y - p2.y) < 60) attemptSwing(p2, 2);
-            } else { if (p2.x < 650) p2.vx=p2.speed; else if(p2.x > 700) p2.vx=-p2.speed; else p2.vx=0; }
-        } else {
-            if (keys['ArrowLeft']) p2.vx = -p2.speed; else if (keys['ArrowRight']) p2.vx = p2.speed; else p2.vx = 0;
-            if (keys['ArrowUp'] && p2.y + p2.h >= GROUND_Y) p2.vy = p2.jumpPower;
-        }
-        applyPhysics(p2);
-
-        // Collisions
-        if (p1.x+p1.w > NET_X && p1.x < NET_X+10) p1.x = NET_X-p1.w;
-        if (p2.x < NET_X+10) p2.x = NET_X+10;
-
-        // Ball Logic
-        if (gameState === 'PLAY') {
-            ball.vy += GRAVITY * 0.5; ball.vx *= 0.99;
-            ball.x += ball.vx; ball.y += ball.vy;
-
-            // Net
-            if (ball.y > GROUND_Y - NET_HEIGHT && Math.abs(ball.x - NET_X) < ball.radius + 5) ball.vx *= -0.8;
-
-            // Floor
-            if (ball.y + ball.radius > GROUND_Y) {
-                ball.y = GROUND_Y - ball.radius; ball.vy *= -0.7;
-                if (Math.abs(ball.vy) < 2) ball.vy = 0;
-                ball.bounces++; checkConditions();
-            }
-            if (ball.x < 0 || ball.x > canvas.width) checkConditions(true);
-
-            // PowerUp Update
-            const now = Date.now();
-            if (!powerUp.visible && !powerUp.active && now > powerUp.nextSpawnTime) spawnPowerUp();
-            if (powerUp.visible) {
-                 const dx = ball.x - powerUp.x; const dy = ball.y - powerUp.y;
-                 if(Math.sqrt(dx*dx+dy*dy) < ball.radius + powerUp.radius) activatePowerUp();
-            }
-            if (powerUp.active) {
-                powerUp.vy += GRAVITY; powerUp.x += powerUp.vx; powerUp.y += powerUp.vy;
-                if (powerUp.y + powerUp.radius > GROUND_Y) { powerUp.y = GROUND_Y - powerUp.radius; powerUp.vy *= -0.95; }
-                if (powerUp.x - powerUp.radius < 0 || powerUp.x + powerUp.radius > canvas.width) powerUp.vx *= -1;
-                
-                const dx = ball.x - powerUp.x; const dy = ball.y - powerUp.y;
-                if(Math.sqrt(dx*dx + dy*dy) < ball.radius + powerUp.radius) {
-                    const angle = Math.atan2(dy, dx); const force = 10;
-                    ball.vx = Math.cos(angle) * force + ball.vx*0.5; ball.vy = Math.sin(angle) * force + ball.vy*0.5;
-                    powerUp.vx = -Math.cos(angle) * force; powerUp.vy = -Math.sin(angle) * force;
-                    ball.x += Math.cos(angle)*2; ball.y += Math.sin(angle)*2;
-                }
-                if (now > powerUp.despawnTime) resetPowerUp();
-            }
-        } else if (gameState === 'SERVE') {
-             ball.x = (server===1 ? p1.x+20 : p2.x-20); ball.y = (server===1 ? p1.y+20 : p2.y+20);
-        }
-
-        if (p1.swingTimer>0) p1.swingTimer--; else p1.swinging=false;
-        if (p2.swingTimer>0) p2.swingTimer--; else p2.swinging=false;
-    }
-
-    function applyPhysics(obj) {
-        obj.vy += GRAVITY; obj.x += obj.vx; obj.y += obj.vy;
-        if (obj.y+obj.h > GROUND_Y) { obj.y = GROUND_Y-obj.h; obj.vy = 0; }
-    }
-
-    function checkConditions(isOut = false) {
-        if (ball.bounces >= 2) { (ball.x < NET_X) ? scorePoint(2) : scorePoint(1); return; }
-        if (isOut) (ball.lastHitter === 1) ? scorePoint(2) : scorePoint(1);
+        uiScore.innerText = `P1: ${t1} | ${(gameMode===1?"CPU":"P2")}: ${t2}`;
+        if (gameState === 'SERVE') uiMessage.innerText = `${(server===1)?"P1":(gameMode===1?"CPU":"P2")} Serve`;
     }
 
     // --- Draw ---
     function draw() {
         ctx.fillStyle = '#4a8f4a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Court
+        // Walls
+        if (selectedMap > 0) {
+            ctx.fillStyle = '#222';
+            ctx.fillRect(0, 0, 10, canvas.height); ctx.fillRect(canvas.width - 10, 0, 10, canvas.height); 
+        }
+
+        // Lines
         ctx.strokeStyle = 'white'; ctx.lineWidth = 4; ctx.beginPath();
-        ctx.moveTo(50, GROUND_Y); ctx.lineTo(50, GROUND_Y+30);
-        ctx.moveTo(750, GROUND_Y); ctx.lineTo(750, GROUND_Y+30);
+        if (selectedMap === 0) {
+            ctx.moveTo(BASELINE_L, GROUND_Y); ctx.lineTo(BASELINE_L, GROUND_Y+30);
+            ctx.moveTo(BASELINE_R, GROUND_Y); ctx.lineTo(BASELINE_R, GROUND_Y+30);
+        }
         ctx.moveTo(0, GROUND_Y); ctx.lineTo(canvas.width, GROUND_Y); ctx.stroke();
         ctx.fillStyle = '#eee'; ctx.fillRect(NET_X - 2, GROUND_Y - NET_HEIGHT, 4, NET_HEIGHT);
 
+        // Map 2 Obstacles
+        if (selectedMap === 2) {
+            ctx.fillStyle = 'black';
+            obstacles.forEach(obs => { ctx.beginPath(); ctx.arc(obs.x, obs.y, obs.r, 0, Math.PI*2); ctx.fill(); });
+        }
+
         drawPowerUp();
 
-        // P1
-        ctx.fillStyle = p1.swinging?'#ffff00':p1.color; ctx.fillRect(p1.x, p1.y, p1.w, p1.h);
+        // Players (Fixed Colors)
+        ctx.fillStyle = p1.color; ctx.fillRect(p1.x, p1.y, p1.w, p1.h);
         if(p1.swinging) drawRacket(p1, 1);
         
-        // P2
-        ctx.fillStyle = p2.swinging?'#ff5555':p2.color; ctx.fillRect(p2.x, p2.y, p2.w, p2.h);
+        ctx.fillStyle = p2.color; ctx.fillRect(p2.x, p2.y, p2.w, p2.h);
         if(p2.swinging) drawRacket(p2, -1);
 
         // Ball
@@ -472,14 +600,27 @@
     }
 
     function drawPowerUp() {
-        if (!powerUp.visible && !powerUp.active) return;
-        const x = powerUp.x, y = powerUp.y, r = powerUp.radius;
-        ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle = '#DAA520'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = '#000'; ctx.beginPath();
-        ctx.arc(x - r/2.5, y - r/4, r/5, 0, Math.PI*2); ctx.arc(x + r/2.5, y - r/4, r/5, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.beginPath();
-        ctx.arc(x, y + r/10, r/2, 0.2*Math.PI, 0.8*Math.PI); ctx.stroke();
+        const obj = powerUp.active ? powerUp : (powerUp.visible ? powerUp : null);
+        if (!obj) return;
+        const x = obj.x, y = obj.y, r = obj.radius;
+        
+        if (obj.type === 0) {
+            ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#000'; ctx.beginPath();
+            ctx.arc(x - r/2.5, y - r/4, r/5, 0, Math.PI*2); ctx.arc(x + r/2.5, y - r/4, r/5, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.arc(x, y + r/10, r/2, 0.2*Math.PI, 0.8*Math.PI); ctx.stroke();
+        } else if (obj.type === 1) {
+            ctx.fillStyle = '#8A2BE2'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.arc(x-10, y, r, -0.5, 0.5); ctx.stroke(); 
+            ctx.beginPath(); ctx.arc(x+10, y, r, Math.PI-0.5, Math.PI+0.5); ctx.stroke();
+        } else if (obj.type === 2) {
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y-12); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+8, y); ctx.stroke();
+        }
     }
 
     function drawRacket(actor, dir) {
@@ -489,7 +630,7 @@
 
     function loop() { update(); draw(); requestAnimationFrame(loop); }
     
-    resetPowerUp();
+    resetPowerUpObj();
     loop();
 
 </script>
