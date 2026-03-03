@@ -43,6 +43,8 @@ entries:
   
   - title: papers
     entries:
+      - title: "Learning Generation Orders for Masked Discrete Diffusion Models via Variational Inference (ICLR 2026 DeLTa Workshop)"
+        url: https://arxiv.org/abs/2602.23968
       - title: "Position: Don't Use the CLT in LLM Evals With Fewer Than a Few Hundred Datapoints (ICML 2025 Spotlight)"
         url: https://arxiv.org/abs/2503.01747
       - title: "Massively Parallel Expectation Maximization For Approximate Posteriors (AABI 2025)"
