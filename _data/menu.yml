@@ -45,7 +45,7 @@ entries:
   
   - title: papers
     entries:
-      - title: "Efficient Benchmarking Is Just Feature Selection and Multiple Regression"
+      - title: "Efficient Benchmarking Is Just Feature Selection and Multiple Regression (preprint)"
         url: https://arxiv.org/abs/2605.25773
       - title: "Learning Generation Orders for Masked Discrete Diffusion Models via Variational Inference (ICLR 2026 DeLTa Workshop)"
         url: https://arxiv.org/abs/2602.23968
