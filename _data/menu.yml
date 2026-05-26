@@ -36,6 +36,8 @@ entries:
 
   - title: projects
     entries:
+      - title: mrmr_eval -- a minimal tutorial on using mRMR for efficient LLM benchmarking
+        url: https://github.com/sambowyer/mrmr_eval/
       - title: bayes_evals -- a lightweight library for Bayesian analysis of LLM evals
         url: https://github.com/sambowyer/bayes_evals
       - title: alan -- a massively parallel probabilistic programming language
@@ -43,6 +45,8 @@ entries:
   
   - title: papers
     entries:
+      - title: "Efficient Benchmarking Is Just Feature Selection and Multiple Regression"
+        url: https://arxiv.org/abs/2605.25773
       - title: "Learning Generation Orders for Masked Discrete Diffusion Models via Variational Inference (ICLR 2026 DeLTa Workshop)"
         url: https://arxiv.org/abs/2602.23968
       - title: "Position: Don't Use the CLT in LLM Evals With Fewer Than a Few Hundred Datapoints (ICML 2025 Spotlight)"
