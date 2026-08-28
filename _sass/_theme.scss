@@ -1,4 +1,5 @@
-// Palette. Warm cream in light, warm near-black in dark.
+// Palette. Light (warm cream) is the default for everyone; dark applies only
+// when the visitor opts in via the toggle, which sets data-theme="dark".
 // --hl / --hl-fg drive the block-inversion hover; they follow the theme.
 
 :root {
@@ -13,17 +14,6 @@
           "Roboto Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #1b1815;
-    --fg: #ece3d5;
-    --muted: #a29684;
-    --rule: #ece3d5;
-    --rule-soft: #3a332b;
-    --accent: #d99464;
-    --mark: #4d411f;
-  }
-}
 :root[data-theme="dark"] {
   --bg: #1b1815;
   --fg: #ece3d5;

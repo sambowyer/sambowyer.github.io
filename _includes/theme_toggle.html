@@ -12,13 +12,10 @@
 <script>
   (function () {
     var root = document.documentElement;
-    function current() {
-      if (root.dataset.theme) return root.dataset.theme;
-      return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
+    // Light is the default; the OS preference is deliberately not consulted.
+    function current() { return root.dataset.theme === "dark" ? "dark" : "light"; }
     function sync() { root.setAttribute("data-resolved-theme", current()); }
     sync();
-    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", sync);
     document.querySelectorAll(".theme-toggle").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var next = current() === "dark" ? "light" : "dark";
