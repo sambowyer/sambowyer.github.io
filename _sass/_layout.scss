@@ -127,9 +127,9 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 560px) {
   .entry__line { flex-direction: column; }
   .masthead { grid-template-columns: 1fr; gap: 1.5rem 0; }
-  // single column here, so pin the portrait to the right edge rather than
-  // leaving it stranded under the left margin
-  .masthead__photo { width: 8.5rem; justify-self: end; }
+  // single column here, so centre the portrait rather than leaving it
+  // stranded under the left margin
+  .masthead__photo { width: 8.5rem; justify-self: center; }
   // max-content columns overflow a narrow viewport ("google scholar" is wide),
   // so drop the fixed grid and let the links wrap.
   .links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
