@@ -1,0 +1,3 @@
+{%- comment -%}Bracket label derived from the destination: {% include link_tag.html url=p.url %}{%- endcomment -%}
+{%- assign u = include.url -%}
+{%- if u contains "arxiv.org" -%}arxiv{%- elsif u contains "github.com" -%}github{%- elsif u contains "scholar.google" -%}scholar{%- elsif u contains "compass.blogs" -%}compass{%- elsif u contains "thestorygraph" -%}storygraph{%- elsif u contains "letterboxd" -%}letterboxd{%- elsif u contains "spotify" -%}spotify{%- elsif u contains ".pdf" -%}pdf{%- elsif u contains "mailto:" -%}email{%- elsif u contains "tennis" -%}🎾🎾{%- else -%}link{%- endif -%}

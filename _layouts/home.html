@@ -1,15 +1,90 @@
 ---
 layout: default
 ---
-<header>
+{%- assign c = site.data.content -%}
+{%- assign pinned = c.external_posts | where: 'featured', true -%}
+{%- assign unpinned = c.external_posts | where_exp: 'p', 'p.featured != true' | sort: 'date' | reverse -%}
+{%- assign ext_posts = pinned | concat: unpinned -%}
+
+<div class="topbar">{%- include theme_toggle.html -%}</div>
+
+<header class="masthead">
   <h1>{{ site.title }}</h1>
-  {%-if site.theme_config.show_description-%}
-    <p>{{ site.description }}</p>
-  {%-endif-%}
+  <p>{{ c.bio }}</p>
+  <p class="now">{{ c.now }}</p>
 </header>
 
-{%-include menu_item.html collection=site.data.menu.entries-%}
+<h2>Links</h2>
+<div class="links">
+  {%- for l in c.links -%}
+  <a href="{{ l.url | relative_url }}">{%- include icon.html name=l.title -%}<span>{{ l.text }}</span></a>
+  {%- endfor -%}
+</div>
 
-{{ content }}
+<h2>Papers</h2>
+{%- for p in c.papers %}
+<div class="entry">
+  <p class="entry__title"><a href="{{ p.url }}">{{ p.title }}</a></p>
+  <div class="entry__line">
+    <span>{{ p.year }} // {{ p.venue }}</span>
+    <a class="tag" href="{{ p.url }}">{% include link_tag.html url=p.url %}</a>
+  </div>
+</div>
+{%- endfor %}
 
-<!-- {%-include footer.html-%} -->
+<h2>Projects</h2>
+{%- for p in c.projects %}
+<div class="entry">
+  <p class="entry__title"><a href="{{ p.url }}">{{ p.name }}</a></p>
+  <p class="entry__summary">{{ p.summary }}</p>
+  <div class="entry__line">
+    <span></span>
+    <a class="tag" href="{{ p.url }}">{% include link_tag.html url=p.url %}</a>
+  </div>
+</div>
+{%- endfor %}
+
+<h2>Writing</h2>
+{%- for post in site.posts %}
+<div class="entry">
+  <p class="entry__title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></p>
+  <div class="entry__line">
+    <span>sambowyer.com // {{ post.date | date: "%Y-%m-%d" }}</span>
+    <a class="tag" href="{{ post.url | relative_url }}">read</a>
+  </div>
+</div>
+{%- endfor %}
+{%- for post in ext_posts %}
+<div class="entry">
+  <p class="entry__title"><a href="{{ post.url }}">{{ post.title }}</a></p>
+  <div class="entry__line">
+    <span>{{ post.where }} // {{ post.date | date: "%Y-%m-%d" }}</span>
+    <a class="tag" href="{{ post.url }}">{% include link_tag.html url=post.url %}</a>
+  </div>
+</div>
+{%- endfor %}
+
+<h2>Recommendations</h2>
+{%- for r in c.recommendations %}
+<div class="entry">
+  <p class="entry__title"><a href="{{ r.url }}">{{ r.title }}</a></p>
+  <div class="entry__line">
+    <span>{{ r.kind }} // {{ r.by }}</span>
+    <a class="tag" href="{{ r.url }}">{% include link_tag.html url=r.url %}</a>
+  </div>
+</div>
+{%- endfor %}
+
+<h2>Elsewhere</h2>
+{%- for e in c.elsewhere %}
+<div class="entry">
+  <p class="entry__title"><a href="{{ e.url | relative_url }}">{{ e.title }}</a></p>
+  {% if e.summary %}<p class="entry__summary">{{ e.summary }}</p>{% endif %}
+  <div class="entry__line">
+    <span></span>
+    <a class="tag" href="{{ e.url | relative_url }}">{% include link_tag.html url=e.url %}</a>
+  </div>
+</div>
+{%- endfor %}
+
+<p class="foot">{{ site.title }} // Bristol</p>

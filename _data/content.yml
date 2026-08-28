@@ -1,0 +1,108 @@
+# Single source of truth for the site's content.
+# All design variants render from this file, so content edits land everywhere at once.
+
+bio: >-
+  I'm a probabilistic machine learning PhD student at the University of Bristol's
+  Compass CDT. My research interests include probabilistic programming, deep
+  learning, and using traditional statistics to improve LLM eval procedures.
+
+now: >-
+  Recently finished an internship on pretraining evals at Cohere, rejoining full-time in September.
+
+links:
+  # Order matters: v1/v5 lay these out as two rows of three.
+  - title: email
+    text: sam.bowyer@bristol.ac.uk
+    url: mailto:sam.bowyer@bristol.ac.uk
+  - title: github
+    text: sambowyer
+    url: https://github.com/sambowyer
+  - title: twitter
+    text: "@sambowyer__"
+    url: https://twitter.com/sambowyer__
+  - title: scholar
+    text: google scholar
+    url: https://scholar.google.co.uk/citations?hl=en&user=X70r5JAAAAAJ
+  - title: linkedin
+    text: sam-bowyer
+    url: https://www.linkedin.com/in/sam-bowyer-943a0116a/
+  - title: cv
+    text: CV (pdf)
+    url: /CV.pdf
+
+# NOTE: the one-line `summary` fields are paraphrases of each title, written as
+# placeholders -- worth rewriting in your own words before this goes live.
+papers:
+  - title: "Efficient Benchmarking Is Just Feature Selection and Multiple Regression"
+    venue: preprint
+    year: 2026
+    url: https://arxiv.org/abs/2605.25773
+    summary: Frames choosing a benchmark subset as feature selection, then predicting full-benchmark scores by regression.
+  - title: "Learning Generation Orders for Masked Discrete Diffusion Models via Variational Inference"
+    venue: ICLR DeLTa Workshop
+    year: 2026
+    url: https://arxiv.org/abs/2602.23968
+    summary: Treats the unmasking order in discrete diffusion as a latent variable learned by variational inference.
+  - title: "Position: Don't Use the CLT in LLM Evals With Fewer Than a Few Hundred Datapoints"
+    venue: ICML Spotlight
+    year: 2025
+    url: https://arxiv.org/abs/2503.01747
+    summary: Argues against normal-approximation error bars on small LLM eval sets.
+  - title: "Massively Parallel Expectation Maximization For Approximate Posteriors"
+    venue: AABI
+    year: 2025
+    url: https://arxiv.org/abs/2503.08264
+    summary: A massively parallel formulation of EM for fitting approximate posteriors.
+  - title: "Using Autodiff to Estimate Posterior Moments, Marginals and Samples"
+    venue: UAI
+    year: 2024
+    url: https://arxiv.org/abs/2310.17374
+    summary: Uses automatic differentiation to extract posterior moments, marginals and samples.
+
+projects:
+  - name: mrmr_eval
+    url: https://github.com/sambowyer/mrmr_eval/
+    summary: A minimal tutorial on using mRMR for efficient LLM benchmarking.
+  - name: bayes_evals
+    url: https://github.com/sambowyer/bayes_evals
+    summary: A lightweight library for Bayesian analysis of LLM evals.
+  - name: alan
+    url: https://github.com/alan-ppl/alan
+    summary: A massively parallel probabilistic programming language.
+
+# External writing. Self-hosted posts in _posts/ are merged in automatically.
+external_posts:
+  - title: "Bayesian LLM Finetuning"
+    url: https://compass.blogs.bristol.ac.uk/2024/08/28/student-perspectives-bayesian-llm-finetuning/
+    date: 2024-08-28
+    where: Compass Student Blog
+    featured: true # pinned above the date-sorted rest
+  - title: "AI UK 2025 Conference"
+    url: https://compass.blogs.bristol.ac.uk/2025/04/25/student-perspectives-ai-uk-2025-conference/
+    date: 2025-04-25
+    where: Compass Student Blog
+  - title: "Special Report: Compass Away Day 2024"
+    url: https://compass.blogs.bristol.ac.uk/2024/08/21/compass-away-day-2024/
+    date: 2024-08-21
+    where: Compass Student Blog
+
+recommendations:
+  - title: Endgame
+    by: Samuel Beckett
+    kind: play
+    url: https://app.thestorygraph.com/books/cc1b3b5a-9e1a-480a-9365-bd1a2da6a844
+  - title: La Chimera
+    by: Alice Rohrwacher
+    kind: film
+    url: https://letterboxd.com/film/la-chimera/
+  - title: Cut Worms
+    by: Cut Worms
+    kind: music
+    url: https://open.spotify.com/album/2RcDC3U0dfYCrniJkBbtE2
+
+elsewhere:
+  - title: presentations
+    summary: Slides from talks and reading groups.
+    url: https://github.com/sambowyer/presentations/
+  - title: tennis
+    url: /tennis.html

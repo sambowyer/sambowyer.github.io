@@ -1,0 +1,38 @@
+// Palette. Warm cream in light, warm near-black in dark.
+// --hl / --hl-fg drive the block-inversion hover; they follow the theme.
+
+:root {
+  --bg: #faf6ee;
+  --fg: #2b2620;
+  --muted: #7d7263;
+  --rule: #2b2620;      // hairlines are full-strength here -- that's the look
+  --rule-soft: #ded4c2;
+  --accent: #8a4b2a;
+  --mark: #f6e6a8;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", "JetBrains Mono", "IBM Plex Mono",
+          "Roboto Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1b1815;
+    --fg: #ece3d5;
+    --muted: #a29684;
+    --rule: #ece3d5;
+    --rule-soft: #3a332b;
+    --accent: #d99464;
+    --mark: #4d411f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1b1815;
+  --fg: #ece3d5;
+  --muted: #a29684;
+  --rule: #ece3d5;
+  --rule-soft: #3a332b;
+  --accent: #d99464;
+  --mark: #4d411f;
+}
+
+// Hover highlight: invert against the current theme.
+:root { --hl: var(--fg); --hl-fg: var(--bg); }

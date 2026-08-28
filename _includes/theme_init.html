@@ -1,0 +1,12 @@
+{%- comment -%}
+  Runs before first paint so a stored dark preference doesn't flash white.
+  No stored value => follow the OS via prefers-color-scheme.
+{%- endcomment -%}
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  })();
+</script>

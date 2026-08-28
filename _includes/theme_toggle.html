@@ -1,0 +1,31 @@
+<button class="theme-toggle" type="button" aria-label="Switch between light and dark mode" title="Switch light/dark">
+  <svg class="theme-toggle__sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="4.6" fill="none" stroke="currentColor" stroke-width="1.9"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+          d="M12 1.8v2.6M12 19.6v2.6M22.2 12h-2.6M4.4 12H1.8M19.2 4.8l-1.9 1.9M6.7 17.3l-1.9 1.9M19.2 19.2l-1.9-1.9M6.7 6.7L4.8 4.8"/>
+  </svg>
+  <svg class="theme-toggle__moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"
+          d="M20.5 14.6A8.8 8.8 0 019.4 3.5a8.8 8.8 0 1011.1 11.1z"/>
+  </svg>
+</button>
+<script>
+  (function () {
+    var root = document.documentElement;
+    function current() {
+      if (root.dataset.theme) return root.dataset.theme;
+      return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    function sync() { root.setAttribute("data-resolved-theme", current()); }
+    sync();
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", sync);
+    document.querySelectorAll(".theme-toggle").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var next = current() === "dark" ? "light" : "dark";
+        root.dataset.theme = next;
+        try { localStorage.setItem("theme", next); } catch (e) {}
+        sync();
+      });
+    });
+  })();
+</script>

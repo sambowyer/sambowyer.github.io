@@ -1,40 +1,17 @@
 source "https://rubygems.org"
 
-# Hello! This is where you manage which Jekyll version is used to run.
-# When you want to use a different version, change it below, save the
-# file and run `bundle install`. Run Jekyll with `bundle exec`, like so:
-#
-#     bundle exec jekyll serve
-#
-# This will help ensure the proper Jekyll version is running.
-# Happy Jekylling!
-# gem "jekyll", "~> 4.1"
+# Local dev + CI both build with plain Jekyll 4 (not the `github-pages` gem,
+# which pins Jekyll 3.8 and no longer runs on Ruby 3).
+# Serve with: bundle exec jekyll serve --livereload
+gem "jekyll", "~> 4.3"
 
-# This is the default theme for new Jekyll sites. You may change this to anything you like.
-# gem "minima", "~> 2.0"
-# gem "no-style-please", "~> 0.1.0"
-
-# If you want to use GitHub Pages, remove the "gem "jekyll"" above and
-# uncomment the line below. To upgrade, run `bundle update github-pages`.
-gem "github-pages", "~> 203", group: :jekyll_plugins
-# If you have any plugins, put them here!
 group :jekyll_plugins do
-  gem "jekyll-feed", "~> 0.6"
+  gem "jekyll-feed", "~> 0.17"
+  gem "jekyll-seo-tag", "~> 2.8"
 end
 
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-# and associated library.
-platforms :mingw, :x64_mingw, :mswin, :jruby do
-  gem "tzinfo", "~> 1.2"
-  gem "tzinfo-data"
-end
-
-# Performance-booster for watching directories on Windows
-gem "wdm", "~> 0.1.0", :platforms => [:mingw, :x64_mingw, :mswin]
-
-# kramdown v2 ships without the gfm parser by default. If you're using
-# kramdown v1, comment out this line.
-gem "kramdown-parser-gfm"
-
-
+# Default gems removed from Ruby 3.x that Jekyll's deps still expect.
 gem "webrick", "~> 1.8"
+gem "csv"
+gem "base64"
+gem "bigdecimal"
