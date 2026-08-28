@@ -31,6 +31,10 @@ a:hover { background: var(--hl); color: var(--hl-fg); text-decoration: none; }
   gap: 0 2rem;
   align-items: start;
 }
+// Title spans both columns, so the portrait starts on the second grid row --
+// level with the bio rather than the title, without hard-coding an offset.
+.masthead h1 { grid-column: 1 / -1; }
+
 .masthead__photo {
   width: 9.5rem;
   height: auto;
@@ -126,10 +130,12 @@ img { max-width: 100%; height: auto; }
 
 @media (max-width: 560px) {
   .entry__line { flex-direction: column; }
-  .masthead { grid-template-columns: 1fr; gap: 1.5rem 0; }
+  // row-gap stays 0 so the title keeps its own margin below it; the portrait
+  // brings its own spacing instead
+  .masthead { grid-template-columns: 1fr; gap: 0; }
   // single column here, so centre the portrait rather than leaving it
   // stranded under the left margin
-  .masthead__photo { width: 8.5rem; justify-self: center; }
+  .masthead__photo { width: 8.5rem; justify-self: center; margin-top: 1.5rem; }
   // max-content columns overflow a narrow viewport ("google scholar" is wide),
   // so drop the fixed grid and let the links wrap.
   .links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
