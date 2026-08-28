@@ -9,9 +9,13 @@ layout: default
 <div class="topbar">{%- include theme_toggle.html -%}</div>
 
 <header class="masthead">
-  <h1>{{ site.title }}</h1>
-  <p>{{ c.bio }}</p>
-  <p class="now">{{ c.now }}</p>
+  <div class="masthead__text">
+    <h1>{{ site.title }}</h1>
+    <p>{{ c.bio }}</p>
+    <p class="now">{{ c.now }}</p>
+  </div>
+  <img class="masthead__photo" src="{{ '/assets/sambowyer.jpg' | relative_url }}"
+       alt="Sam Bowyer" width="480" height="480" loading="lazy" decoding="async">
 </header>
 
 <h2>Links</h2>

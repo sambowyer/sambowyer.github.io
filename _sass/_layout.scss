@@ -23,7 +23,20 @@ a { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; te
 a:hover { background: var(--hl); color: var(--hl-fg); text-decoration: none; }
 
 // ---- masthead ----
-.masthead { margin-bottom: 2.5rem; }
+// Text left, portrait right; stacks under the text on narrow screens.
+.masthead {
+  margin-bottom: 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 2rem;
+  align-items: start;
+}
+.masthead__photo {
+  width: 9.5rem;
+  height: auto;
+  display: block;
+  border: 1px solid var(--rule-soft);
+}
 .masthead h1 {
   margin: 0 0 0.9rem;
   font-size: 1.15rem;
@@ -113,6 +126,8 @@ img { max-width: 100%; height: auto; }
 
 @media (max-width: 560px) {
   .entry__line { flex-direction: column; }
+  .masthead { grid-template-columns: 1fr; gap: 1.5rem 0; }
+  .masthead__photo { width: 8rem; }
   // max-content columns overflow a narrow viewport ("google scholar" is wide),
   // so drop the fixed grid and let the links wrap.
   .links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
