@@ -2,12 +2,13 @@
 # All design variants render from this file, so content edits land everywhere at once.
 
 bio: >-
-  I'm a probabilistic machine learning PhD student at the University of Bristol's
-  Compass CDT. My research interests include probabilistic programming, deep
-  learning, and using traditional statistics to improve LLM eval procedures.
-
+  I'm a Member of Technical staff at Cohere, working on pretraining evals.
+  Previously, I spent four years on a PhD in probabilistic machine learning
+  at the University of Bristol's Compass CDT (viva pending!). My research 
+  interests include probabilistic modelling, deep learning, and using 
+  traditional statistics to improve LLM evaluation procedures.
 now: >-
-  Recently finished an internship on pretraining evals at Cohere, rejoining full-time in September.
+  Feel free to get in touch!
 
 links:
   # Order matters: v1/v5 lay these out as two rows of three.
