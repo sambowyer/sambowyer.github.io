@@ -104,5 +104,7 @@ elsewhere:
   - title: presentations
     summary: Slides from talks and reading groups.
     url: https://github.com/sambowyer/presentations/
+  - title: jazz practice
+    url: /jazz/
   - title: tennis
     url: /tennis.html
