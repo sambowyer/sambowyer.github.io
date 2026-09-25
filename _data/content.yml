@@ -35,7 +35,7 @@ links:
 # placeholders -- worth rewriting in your own words before this goes live.
 papers:
   - title: "Efficient Benchmarking Is Just Feature Selection and Multiple Regression"
-    venue: preprint
+    venue: NeurIPS
     year: 2026
     url: https://arxiv.org/abs/2605.25773
     summary: Frames choosing a benchmark subset as feature selection, then predicting full-benchmark scores by regression.
